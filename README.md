@@ -1,6 +1,23 @@
 # R1062
 ## Announcement
 ## Introduction
+- 加退選原則：本門課除新聞所學生外，加選以曾選修新聞所開設之「新聞與數位創作」學程之學生為優先，社科院學生次之，生傳、文學院、管院學生再次之。理工科系學生由於相關程式學習資源多元，建議選修台大校方為培植學生資訊能力開設的精彩CS+X課程系列。
+- 預設對象：本課程預設對象為「無程式寫作經驗」且對資料新聞抱有興趣的學生。不建議有程式撰寫經驗者選修，亦不開放旁聽。
+- 課程抵用原則：新聞所學生得選修本課，但由於本課程內容與「新聞資料分析」雷同，兩門課僅可以一門抵用畢業學分。
+- 由於以無程式經驗者為對象，教師得依學生學習情形調整授課內容，但至少包含以下內容：
+  - R Programming basics
+  - Reading files including CSV and JSON formats
+  - Processing data by apply() family and dplyr package
+  - Exploratory Data Analysis with ggplot()
+  - Web crawler skill: getting data by GET and POST
+  - Web APIs e.g., Google Map, Facebook, and Twitter
+  - Text processing packages including tidytext and jiebaR
+### Gradings
+* **0% Quiz**: 本門課包含二次不計分的隨堂小考，分別用以了解學生期初之學習情形與驗收期末學習成果。
+* **3% absence**: 未能到課需依學校規定之請假程序請假，經查缺席者一次得扣學期總成績三分。
+* **40% Assignments**: 作業繳交時間一律為作業公布後的五天內繳交（Mon 23:59），以便助教批改並協助同學回顧作業內容。作業公布七天內可接受補交，然成績以八折計算，次週上課前不再接受補交（Wed 11:59）。作業繳交問題請聯絡Official TA 陳潔。作業應按照指定格式繳交（第三次作業開始，需以RMarkdown或R Notebook撰寫，並繳交.rmd檔及其所衍生的HTML檔），如格式不合，經助教聯繫未在次週授課當天補交者該項亦不予計分。
+* **30% Digital News Project**: 從政府開放資料、或指定的資料集發展一則資料新聞，著重在資料的彙整、資料的清理、視覺化敘事。該則新聞需投稿至台大新聞e論壇，或其他新聞媒體。
+* **30% Data Science Project**: 自行爬取非結構化文本資料進行文字探勘，著重在文字的分析、模型的應用和事後詮釋。
 ### Books
 * [R for data science](http://r4ds.had.co.nz/introduction.html)
 * [Text mining using r](http://tidytextmining.com/)
