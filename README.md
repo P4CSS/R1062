@@ -1,6 +1,13 @@
 # R1062
 ## Announcement
 ## Introduction
+### Books
+* [R for data science](http://r4ds.had.co.nz/introduction.html)
+* [Text mining using r](http://tidytextmining.com/)
+* [Good jiebaR introduction](http://blog.fens.me/r-word-jiebar/)
+* http://www.rdatamining.com/
+* [Learning R in Y minutes](https://learnxinyminutes.com/docs/r/)
+* [Datacamp for R](https://www.datacamp.com/courses/tech:r)
 ## Calendar
 | Week| Date| Toipic| Activities|
 | --- | --- | --- | --- |
