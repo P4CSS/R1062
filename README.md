@@ -40,7 +40,9 @@
 
 | Week| Date| Toipic| Activities|
 | --- | --- | --- | --- |
-| W02 | 0307 | R Basic; data types, import/export data | [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) | |
+| W02 | 0307 | R Basic; data types, import/export data 
+[Slide00. Install](https://docs.google.com/presentation/d/e/2PACX-1vSNj-P2-8cJptSy-eRMKXs4eSNgLgeaCHiF22THEDkmijIXaqFA8U67T3Lp-iR0ibXssD-NHUq5DEG2/pub?start=false&loop=false&delayms=3000), 
+[Slide01. R Basic](https://docs.google.com/presentation/d/e/2PACX-1vRjb_W1Vo9-zD9F4FmWOiB6K4ezkF6W64OKcX7bZD6ordKvOT-6LFoGi0le-HzT2ABKudDNhr_qKt2x/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_293)| [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) | |
 | W03 | 0314 | Reading sheet data: csv, excel | AS#2 | |
 | W04 | 0321 | Reading hierarchical data: json and xml | AS#3 | +R1061 personal proposal Propose your personal interests |
 | W05 | 0328 | Getting data by web API: Facebook/google map as an example | AS#4 | |
