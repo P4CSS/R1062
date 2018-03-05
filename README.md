@@ -2,6 +2,9 @@
 
 ## Announcement
 
+* [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
+
+
 ## Introduction
 - https://r4dj.github.io/R1062/
 - 加退選原則：本門課除新聞所學生外，加選以曾選修新聞所開設之「新聞與數位創作」學程之學生為優先，社科院學生次之，生傳、文學院、管院學生再次之。理工科系學生由於相關程式學習資源多元，建議選修台大校方為培植學生資訊能力開設的精彩CS+X課程系列。
@@ -37,7 +40,7 @@
 
 | Week| Date| Toipic| Activities|
 | --- | --- | --- | --- |
-| W02 | 0307 | R Basic; data types, import/export data | AS#1 | |
+| W02 | 0307 | R Basic; data types, import/export data | [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) | |
 | W03 | 0314 | Reading sheet data: csv, excel | AS#2 | |
 | W04 | 0321 | Reading hierarchical data: json and xml | AS#3 | +R1061 personal proposal Propose your personal interests |
 | W05 | 0328 | Getting data by web API: Facebook/google map as an example | AS#4 | |
