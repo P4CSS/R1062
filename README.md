@@ -1,5 +1,4 @@
 # R1062
-* https://classroom.github.com/classrooms/37063572-r-for-digital-journalism
 ## Announcement
 ## Introduction
 - 加退選原則：本門課除新聞所學生外，加選以曾選修新聞所開設之「新聞與數位創作」學程之學生為優先，社科院學生次之，生傳、文學院、管院學生再次之。理工科系學生由於相關程式學習資源多元，建議選修台大校方為培植學生資訊能力開設的精彩CS+X課程系列。
