@@ -2,7 +2,7 @@
 TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
 ## Announcement
 
-* [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
+* [AS#1 Learning with datacamp](https://github.com/R4CSS/Assignments/blob/master/01DataCamp.md) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
 
 
 ## Introduction
