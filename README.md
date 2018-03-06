@@ -1,12 +1,13 @@
 # R1062
-TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
+* TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
+* https://r4css.github.io/R1062/
+
 ## Announcement
 
 * [AS#1 Learning with datacamp](https://github.com/R4CSS/Assignments/blob/master/01DataCamp.md) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
 
 
 ## Introduction
-- https://r4dj.github.io/R1062/
 - 加退選原則：本門課除新聞所學生外，加選以曾選修新聞所開設之「新聞與數位創作」學程之學生為優先，社科院學生次之，生傳、文學院、管院學生再次之。理工科系學生由於相關程式學習資源多元，建議選修台大校方為培植學生資訊能力開設的精彩CS+X課程系列。
 - 預設對象：本課程預設對象為「無程式寫作經驗」且對資料新聞抱有興趣的學生。不建議有程式撰寫經驗者選修，亦不開放旁聽。
 - 課程抵用原則：新聞所學生得選修本課，但由於本課程內容與「新聞資料分析」雷同，兩門課僅可以一門抵用畢業學分。
