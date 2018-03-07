@@ -3,7 +3,9 @@
 
 
 # 0. Installing essential packages ----------------------------------------
-
+# install a pacakge from R-cran https://cran.r-project.org/web/packages/available_packages_by_name.html
+# The package will be downloaded and installed to your computer, 
+# BUT not yet loaded into your current environment.
 install.packages("tidyverse")
 
 
@@ -32,10 +34,44 @@ url1 <- "https://rent.591.com.tw/home/search/rsList?is_new_list=1&type=1&kind=2&
 res1 <- fromJSON(content(GET(url1), "text"))
 all.df <- res1$data$data
 
+url <- "http://data.taipei/opendata/datalist/datasetMeta/download?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=34a4a431-f04d-474a-8e72-8d3f586db3df"
+df <- read.csv(url, fileEncoding = "big5")
 
-df <- readRDS("data/591.rds")
 
-# 1. Create vectors ----------------------------------------------------------
+
+# df1. take a glance at data.frame ----------------------------------------
+
+
+View(df)
+head(df)	# get first part of the data.frame
+class(df)
+str(df)
+
+summary(df)
+# look up help
+help(summary)
+?summary
+
+
+# df2. Dimension of data.frame -------------------------------------------------
+
+dim(df)
+ncol(df)
+nrow(df)
+length(df)
+
+
+
+# df3. data.frame and vectors --------------------------------------------------
+
+names(df)
+df$發生.現.地點
+df$發生時段
+length(df$發生時段)
+
+
+
+# v1. Create vectors ----------------------------------------------------------
 # also Initiating vectors
 
 # http://cus93.trade.gov.tw/FSC3040F/FSC3040F?menuURL=FSC3040F
@@ -58,7 +94,7 @@ plot(density(c))
 
 
 
-# 2. Take a glance at a vector -----------------------------------------------
+# v2. Take a glance at a vector -----------------------------------------------
 
 country
 buyin
@@ -69,7 +105,7 @@ View(country)
 
 
 
-# 3. Get elements from vectors -----------------------------------------------
+# v3. Get elements from vectors -----------------------------------------------
 
 country[3:7]
 
@@ -83,7 +119,7 @@ a[length(a):3]
 
 
 
-# 4. Delete elements from vectors --------------------------------------------
+# v4. Delete elements from vectors --------------------------------------------
 
 b <- 11:20
 b[-(3:5)]
@@ -102,7 +138,7 @@ a
 
 
 
-# 5. Concatenate two or three vectors  ---------------------------------------
+# v5. Concatenate two or three vectors  ---------------------------------------
 
 a <- c(a, 3)
 a <- c(a, b)
@@ -110,7 +146,7 @@ a <- c(a, a, b)
 
 
 
-# 6. Arithmetic operations ---------------------------------------------------
+# v6. Arithmetic operations ---------------------------------------------------
 
 a <- a + 3
 a <- a / 2
@@ -119,7 +155,7 @@ a <- a %/% 2 	# Quotient
 
 
 
-# 7. Logical comparison ------------------------------------------------------
+# v7. Logical comparison ------------------------------------------------------
 
 a %% 2 == 0 	# deteting odd/even number
 a %% 2 != 0
@@ -172,7 +208,7 @@ x.b <- c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k")
 
 
 
-# Sorting -----------------------------------------------------------------
+# v8. Sorting -----------------------------------------------------------------
 
 c <- c(33, 55, 22, 13, 4, 24)
 rev(c)
@@ -191,7 +227,7 @@ c <- sort(c)
 
 
 
- # Math functions ----------------------------------------------------------
+ # v9. Math functions ----------------------------------------------------------
 
 min(a); max(a); mean(a); median(a); sd(a)
 log2(a)
@@ -200,7 +236,7 @@ log1p(a)
 
 
 
-# Mode of vector ----------------------------------------------------------
+# v10. Mode of vector ----------------------------------------------------------
 
 mode(country)				# character
 mode(buyin)					# numeric
@@ -211,7 +247,7 @@ mode(buyinc)				# character
 
 
 
-# Mode conversion ---------------------------------------------------------
+# v11. Mode conversion ---------------------------------------------------------
 # character > numeric > logical
 
 buyinc <- as.character(buyin)
@@ -226,7 +262,7 @@ sum(a%%2==1)
 
 
 
-# Operations and function of character vectors ----------------------------
+# v12. Operations and function of character vectors ----------------------------
 
 a <- seq(11, 55, 11)
 paste("A", a)		# concatenate
@@ -237,51 +273,22 @@ paste0("A", a)		# concatenate
 
 # data.frame ==============================================================
 
-# Combine 3 vectors to a dataframe ----------------------------------------
+# df4. Combine 3 vectors to a dataframe ----------------------------------------
 
 df <- data.frame(country, buyin, buyout)
-View(df)
-head(df)	# get first part of the data.frame
-class(df)
-str(df)
 
 df <- data.frame(country, buyin, buyout, stringsAsFactors = FALSE)
 str(df)
 
 
 
-# Dimension of data.frame -------------------------------------------------
 
-dim(df)
-ncol(df)
-nrow(df)
-length(df)
-
-
-
-# data.frame and vectors --------------------------------------------------
-
-names(df)
-df$buyin
-df$country
-length(df$buyin)
-
-
+# df5. Arithmetic operatoins between variables ----------------------------
 
 df$sub <- df$buyin - df$buyout
 
-# Summary -----------------------------------------------------------------
 
-summary(df)
-
-# look up help
-help(summary)
-?summary
-
-
-
-
-# Filtering row data ------------------------------------------------------
+# df6. Filtering and selection ------------------------------------------------------
 
 df
 names(df)
@@ -299,7 +306,7 @@ class(unlist(df[1, -1])) # filter the 1st row and select all columns except 1
 
 
 
-# Sort data.frame ---------------------------------------------------------
+# df7. Sort data.frame ---------------------------------------------------------
 
 # sort rows by df$buyin column
 df.sorted <- df[order(df$buyin),]
