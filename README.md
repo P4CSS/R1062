@@ -1,6 +1,7 @@
 # R1062
 * TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
 * https://r4css.github.io/R1062/
+* [A cheatsheet to look up commands](RCheatSheep.pdf)
 
 ## Announcement
 
