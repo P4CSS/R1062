@@ -4,6 +4,7 @@
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 
 ## Announcement
+* Running the `0_install_pkgs.R` at home to install all packages for our course.
 
 ### W03-Importing data
 
