@@ -1,0 +1,127 @@
+---
+title: "Paid_Maternity_Leave"
+author: "Ji-Lung Hsieh"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "figs/"
+)
+```
+
+
+# Before the case 
+
+本文件示範了如何用[R Markdown](http://rmarkdown.rstudio.com) Notebook來寫R程式。R程式在執行Script時即能紀錄當下的變數值（也就是你在Environment視窗所看見的那些變數）， 所以，用R Markdown或R Notebook的優點反而在於**說明案例與程式碼**。如果你想多了解R Markdown的格式化規則，你可以參考[R Markdown](http://rmarkdown.rstudio.com)網址中的教學。
+* [R Markdown HTML Document Formatting](http://rmarkdown.rstudio.com/html_document_format.html)
+## Essential R Markdown Operations
+1. Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+2. Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+3. When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
+
+
+
+
+# Paid maternity leave
+
+## Description
+
+### The case
+該資料的數值一共分成五個等級，從1-5分別代表沒有給付、給付1-14週、15-25週、26-51週、52週以上五種情形。所以若資料上看到某個國家在2013年的數值為5，代表該國家在2013年給付其國內婦女產假52週以上。所以先把2013年的資料給繪製成地圖
+
+> 臺灣是52天，所以應該是第2級
+
+接下來，我除了想知道2013年哪些國家分別是1-5外，我還想知道，他們在1995年的時候，分別是多少，因為這樣我可以知道，哪一些國家的該項福利政策正在發展、改變中。因此，我把所有國家發展為10類。
+
+
+ - 分別是2013年為1-5共五類。
+ - 每一類再區分兩種，有進步（例如2013為4但1995小於4的）的和沒改變（例如2013為4，而1995仍為4的）的。所以一共有十類。
+
+### World map
+![World map of current status](figures/1_1.png)
+
+### Barplot
+![Barplot with different level](figures/1_2.png)
+
+
+
+## Import libraries
+當電腦裡沒有安裝這個套件時，如果想要用library()將其載入到程式碼中，會出現以下的錯誤，顯示使用者的電腦中沒有`readxl`這個套件。
+> library(readxl)
+>　Error in library(readxl) : there is no package called ‘readxl’
+
+
+
+```{r import library, eval=FALSE, include=TRUE}
+# install.packages('readxl')
+# install.packages('rworldmap')
+library(readxl)
+library(rworldmap)
+```
+
+
+
+
+## Read the file
+
+```{r read xlsx}
+ldata <- readxl::read_excel("data/WORLD-MACHE_Gender_6.8.15.xls", "Sheet1", col_names=T)
+
+```
+
+
+## Observing the data {.tabset}
+
+### Dimension and Class
+```{r}
+class(ldata)
+dim(ldata)
+```
+
+### Show names of vectors (columns)
+```{r, eval=FALSE, include=TRUE}
+names(ldata)
+```
+
+## Selecting data
+1. Select first column by `ldata[1]` and `ldata[1, ]`
+2. Select first row
+3. Take a look at their datatype by `class()`。
+4. 你會發現`ldata[1]`和`ldata[1, ]`都是data.frame，但`ldata[ ,1]`卻是是character向量。其中`ldata[1, ]`是比較好理解的，因為取了一列資料，但這個資料有上百個變數，他還是一個data.frame，只是只有一列資料而已。但`ldata[1]`和`ldata[ ,1]`的差異則要特別注意。
+
+```{r}
+col1 <- ldata[1]
+col1_1 <- ldata[ ,1]
+row1 <- ldata[1, ]
+class(col1)
+class(col1_1)
+class(row1)
+```
+
+
+
+## Selecting multiple rows or columns
+
+```{r}
+cols <- ldata[, 6:24]
+# cols <- ldata[, c(3, 6:24)]
+rows <- ldata[1:5, ]
+rows2 <- cols[1:5, ]
+matleave <- ldata[ ,6:24]
+```
+
+## Plotting
+```{r}
+# unlist(matleave[3, ])
+# barplot(matleave[2, ]) # will raise error
+barplot(unlist(matleave[2, ]))
+plot(unlist(matleave[2, ]), type='l')
+plot(unlist(matleave[2, ]), type='l', ylim=range(1, 5))
+plot(unlist(matleave[2, ]), type='l', ylim=range(1, 5), xaxt='n', yaxt='n')
+```

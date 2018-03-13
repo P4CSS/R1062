@@ -13,30 +13,43 @@ install.packages("tidyverse")
 
 # 0. The data -------------------------------------------------------------
 
-load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+# Text data: trump's tweets
+msg <- load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
 View(trump_tweets_df)
+names(trump_tweets_df)
 
 
-library(jsonlite)
-library(httr)
+# Text data: dcard articles
+library(jsonlite)	# loading installed jsonlite to read json
+library(httr)		# loading httr to get data from the web
 
 url <- "https://www.dcard.tw/_api/forums/relationship/posts?popular=true"
 res <- fromJSON(content(GET(url), "text"))
 View(res)
+names(res)
 
+
+
+# Text data: facebook page of DoctorKoWJ
 fburl <- 
 	"https://graph.facebook.com/v2.10/DoctorKoWJ?fields=posts&access_token=188730144854871|1lL4a4CTRymAHvoKxnJDQqvqVdc"
 
 res <- fromJSON(content(GET(fburl), "text"))
-View(res$posts$data)
+posts <- res$posts$data
+View(posts)
+names(posts)
 
+
+# Data: rent591 renting cases
 url1 <- "https://rent.591.com.tw/home/search/rsList?is_new_list=1&type=1&kind=2&searchtype=1&region=1"
 res1 <- fromJSON(content(GET(url1), "text"))
 all.df <- res1$data$data
 
+
+library(tidyverse)
+# Open data: Home theft cases of Taipei
 url <- "http://data.taipei/opendata/datalist/datasetMeta/download?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=34a4a431-f04d-474a-8e72-8d3f586db3df"
 df <- read.csv(url, fileEncoding = "big5")
-
 
 
 # df1. take a glance at data.frame ----------------------------------------
@@ -45,12 +58,13 @@ df <- read.csv(url, fileEncoding = "big5")
 View(df)
 head(df)	# get first part of the data.frame
 class(df)
-str(df)
 
 summary(df)
 # look up help
 help(summary)
 ?summary
+
+
 
 
 # df2. Dimension of data.frame -------------------------------------------------
@@ -59,16 +73,42 @@ dim(df)
 ncol(df)
 nrow(df)
 length(df)
+names(df)
 
 
 
 # df3. data.frame and vectors --------------------------------------------------
 
-names(df)
 df$發生.現.地點
 df$發生時段
 length(df$發生時段)
 
+str(df)
+
+class(df$發生.現.日期)
+class(df$發生時段)
+class(df$發生.現.地點)
+
+df <- read.csv(url, fileEncoding = "big5", stringsAsFactors = FALSE)
+str(df)
+
+
+
+
+
+# v0. data and variable ---------------------------------------------------
+c("1, 2, 3")
+c(1, 2, 3)
+c("1", "2", "3")
+2/3 + cos(1+5)
+exp(3)
+
+# Assignment: object_name <- value, or variable <- value
+x <- 1 + 2 + 3 + 4 * 5
+x
+theft_tp <- read.csv(url, fileEncoding = "big5", stringsAsFactors = FALSE)
+x1 <- c(1, 2, 3, 4, 5)
+x2
 
 
 # v1. Create vectors ----------------------------------------------------------
@@ -79,19 +119,18 @@ country <- c("CN", "US", "JP", "HK", "KR", "SG", "DE", "MY", "VN", "PH", "TH", "
 buyin <- c(26.142, 12.008, 7.032, 13.646, 4.589, 5.768, 2.131, 2.802, 3.428, 3.019, 1.976, 1.118, 1.624, 0.449, 0.983, 1.302, 1.027, 0.553, 0.670, 0.455)
 buyout <- c(22.987, 12.204, 11.837, 7.739, 5.381, 4.610, 2.866, 2.784, 2.414, 2.092, 1.839, 1.788, 1.665, 1.409, 1.391, 1.075, 0.974, 0.899, 0.800, 0.728)
 
+View(country)
+
 # create by sequence
 a <- seq(11, 99, 11)
 b <- 11:20
 
 # create by distribution
-c <- runif(1000, 1, 10) # uniform dist, n=1000
-c <- rnorm(10000000, 1, 10) # normal dist, n=1000
+nums <- runif(1000, 1, 10) # uniform dist, n=1000
+nums <- rnorm(10000000, 1, 10) # normal dist, n=1000
 
-View(country)
-
-plot(density(c))
-
-
+hist(nums)
+hist(nums, breaks = 100)
 
 
 # v2. Take a glance at a vector -----------------------------------------------
@@ -306,6 +345,7 @@ class(unlist(df[1, -1])) # filter the 1st row and select all columns except 1
 
 
 
+
 # df7. Sort data.frame ---------------------------------------------------------
 
 # sort rows by df$buyin column
@@ -335,5 +375,25 @@ plot(df[, 2:3])
 plot(df[1:10, 2:3])
 text(buyin, buyout, labels=country, cex= 0.5, pos=3)
 lines(1:25, 1:25, col='red')
+# 
 
-dev.new()
+
+
+
+# Practice ----------------------------------------------------------------
+
+load("data/rent591TP.rda")
+dim(rent591)
+
+# get only the Da'na district's case and store to a data.frame
+
+# calculate the average price per "ping"
+
+summary(rent591)
+
+rent591 %>%
+	filter(section_name == "大安區") %>%
+	mutate(avg = price/area) %>%
+	ggplot(aes(price, avg, color=kind_name)) +
+	geom_jitter() + 
+	theme(text=element_text(family="STKaiti"))
