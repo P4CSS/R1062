@@ -5,7 +5,15 @@
 
 ## Announcement
 
+### W03-Importing data
+
+* 
+
+### W02-Rbasic
 * [AS#1 Learning with datacamp](https://github.com/R4CSS/Assignments/blob/master/01DataCamp.md) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
+* Reading [Chapter 4 of R for data science](http://r4ds.had.co.nz/workflow-basics.html) to understand basic data types, assignments, variables, character vs. numeric variables, and functions.
+* [R00. Install](https://docs.google.com/presentation/d/e/2PACX-1vSNj-P2-8cJptSy-eRMKXs4eSNgLgeaCHiF22THEDkmijIXaqFA8U67T3Lp-iR0ibXssD-NHUq5DEG2/pub?start=false&loop=false&delayms=3000),
+* [R01. R Basic](https://docs.google.com/presentation/d/e/2PACX-1vRjb_W1Vo9-zD9F4FmWOiB6K4ezkF6W64OKcX7bZD6ordKvOT-6LFoGi0le-HzT2ABKudDNhr_qKt2x/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_293)
 
 
 ## Introduction
@@ -42,7 +50,7 @@
 
 | Week| Date| Toipic| Activities|
 | --- | --- | --- | --- |
-| W02 | 0307 | R Basic; data types, import/export data [R00. Install](https://docs.google.com/presentation/d/e/2PACX-1vSNj-P2-8cJptSy-eRMKXs4eSNgLgeaCHiF22THEDkmijIXaqFA8U67T3Lp-iR0ibXssD-NHUq5DEG2/pub?start=false&loop=false&delayms=3000),[R01. R Basic](https://docs.google.com/presentation/d/e/2PACX-1vRjb_W1Vo9-zD9F4FmWOiB6K4ezkF6W64OKcX7bZD6ordKvOT-6LFoGi0le-HzT2ABKudDNhr_qKt2x/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_293)| [AS#1](https://github.com/R4DJ/R1062/blob/master/Assignments.md#as01) | |
+| W02 | 0307 | R Basic; data types, import/export data | AS#1 |
 | W03 | 0314 | Reading sheet data: csv, excel | AS#2 |
 | W04 | 0321 | Reading hierarchical data: json and xml | AS#3 | +R1061 personal proposal Propose your personal interests |
 | W05 | 0328 | Getting data by web API: Facebook/google map as an example | AS#4 |
