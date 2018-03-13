@@ -7,7 +7,10 @@
 
 ### W03-Importing data
 
-* 
+* [R01. R Basic](https://docs.google.com/presentation/d/e/2PACX-1vRjb_W1Vo9-zD9F4FmWOiB6K4ezkF6W64OKcX7bZD6ordKvOT-6LFoGi0le-HzT2ABKudDNhr_qKt2x/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_293)
+* [R02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000)
+* [AS#2 writing code with RMD]()
+
 
 ### W02-Rbasic
 * [AS#1 Learning with datacamp](https://github.com/R4CSS/Assignments/blob/master/01DataCamp.md) announced. Submitting to ceiba AS#1 no later than 2018/3/13 23:59.
