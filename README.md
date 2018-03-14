@@ -1,6 +1,7 @@
 # https://github.com/R4CSS/R1062
 * TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
 * https://r4css.github.io/R1062/
+* Joining [Facebook page R1062](https://www.facebook.com/groups/R1062/) for calling for help and gathering.
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 
 ## Announcement
