@@ -7,7 +7,7 @@
 * **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
 
 ### W04-Read CSV and JSON
-* [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - [Video01-Paid Maternity Leave]
+* [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - [Video02-1 Paid Maternity Leave](https://youtu.be/65zI6Zrj2zo).
 * [AS#2 writing code with RMD](https://github.com/R4CSS/Assignments/blob/master/02UsingRMD.md). No later than **Mar 26 (MON) 23:59** (Remember our assignment policy). 
 
 
