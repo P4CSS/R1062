@@ -1,16 +1,19 @@
 # https://github.com/R4CSS/R1062
-* TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
-* https://r4css.github.io/R1062/
+* TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [])
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
+* [**Download** whole project before lessons](https://www.dropbox.com/sh/12cev4z4q9ankwj/AADR77HGAAtIbtpO3jgNInfKa?dl=0)
 
 ## Announcement
-* Running the `0_install_pkgs.R` at home to install all packages for our course.
+* **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
+
+### W04-Read CSV and JSON
+* [R02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000)
+* [AS#2 writing code with RMD](https://github.com/R4CSS/Assignments/blob/master/02UsingRMD.md). No later than **Mar 26 (MON) 23:59** (Remember our assignment policy). 
+
 
 ### W03-Importing data
 
 * [R01. R Basic](https://docs.google.com/presentation/d/e/2PACX-1vRjb_W1Vo9-zD9F4FmWOiB6K4ezkF6W64OKcX7bZD6ordKvOT-6LFoGi0le-HzT2ABKudDNhr_qKt2x/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_293)
-* [R02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000)
-* [AS#2 writing code with RMD](https://github.com/R4CSS/Assignments/blob/master/02UsingRMD.md). No later than **Mar 19 (MON) 23:59** (Remember our assignment policy). 
 
 
 ### W02-Rbasic

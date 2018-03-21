@@ -3,40 +3,36 @@
 
 # The case ----------------------------------------------------------------
 
-# The case adaped Washington Post's paid maternity leave as an exmaple to introduce basic skill of data.frame, plotting, and data mamipulation. 
+# The case adaped Washington Post's paid maternity leave as an exmaple to introduce basic skill of data.frame, plotting, and data mamipulation.
 # Link: https://www.washingtonpost.com/news/worldviews/wp/2016/08/13/the-world-is-getting-better-at-paid-maternity-leave-the-u-s-is-not/?tid=sm_tw&utm_term=.f8cd50280326#comments
 
 
 
-# Install essential libraries ---------------------------------------------
+# 1. Install essential libraries ---------------------------------------------
 
-# install.packages('readxl')
-# install.packages('rworldmap')
-
-
-
-# Import libraries --------------------------------------------------------
-
+# Install and import readxl to read excel files
+install.packages("readxl")
 library(readxl)
-library(rworldmap)# drawing worldmap
 
 
 
-# Read the file -----------------------------------------------------------
+
+# 2. Read the file -----------------------------------------------------------
 
 # the read_excel() function convert a sheet to a data.frame
-ldata <- read_excel("WORLD-MACHE_Gender_6.8.15.xls", "Sheet1", col_names=T)
+ldata <- read_excel("data/WORLD-MACHE_Gender_6.8.15.xls", "Sheet1", col_names=T)
 
 # Observing the data using class() or dim(). Is it a data.frame or not?
-class(ldata)
-dim(ldata)
+class(ldata)  # object Classes
+mode(ldata) # The (Storage) Mode of an Object
+str(ldata) # Display the Structure of an Arbitrary R Object
+dim(ldata) # dimension of data.frame
 
 # Show names of vectors (columns) by names()
 names(ldata)
 
 
-
-# Selecting data in data.frame --------------------------------------------
+# 3. Selecting data in data.frame --------------------------------------------
 
 # Here are three assignments, assigning 3 selections to 3 variables.
 col1 <- ldata[1] # select the 1st column
@@ -80,7 +76,7 @@ class(matleave)
 matleave[, 1:5]
 matleave[1:5, ]
 
-# Does it possible to select discontinuous columns? 
+# Does it possible to select discontinuous columns?
 # e.g., 3rd, 6th to 24th columns
 matleave[, c(3, 6:24)]
 
@@ -115,7 +111,7 @@ a
 
 # Plotting the second rows
 # WILL raise error, Read the error msg word by word
-barplot(matleave[2, ]) 
+barplot(matleave[2, ])
 
 # Take a look at the data type of matleave[2, ]
 class(matleave[2, ])
@@ -155,7 +151,7 @@ for(i in 1:6){
     barplot(unlist(matleave[i, ]), ylim=range(0, 5), space=0, border=NA)
 }
 
-# Ploting multiple data in single figure 
+# Ploting multiple data in single figure
 # Try to search online to see how to plot multiple charts in a figure
 par(mfrow=c(3,2))
 for(i in 1:6){
@@ -236,8 +232,13 @@ for (x in c(1:nrow(m05))){
 
 # Drawing worldmap --------------------------------------------------------
 
+# Install rworldmap
+install.packages("rworldmap")
+library(rworldmap)# drawing worldmap
+
+
 # Selecting iso3 vector and matleave data
-mdata <- 
+mdata <-
 
 # join your data with the world map data
 myMap <- joinCountryData2Map(mdata, joinCode = "ISO3", nameJoinColumn = "iso3")
@@ -254,7 +255,7 @@ mapCountryData(myMap
 
 # Drawing other year's map
 mapCountryData(
-    
+
 )
 
 # Drawing multiple wordmap ------------------------------------------------
@@ -278,7 +279,7 @@ for(i in _________){
 # Summarize data ----------------------------------------------------------
 
 # Selecting 1 to 24 vectors to tdata
-tdata <- 
+tdata <-
 
 # Dealing with NA
 tdata[is.na(tdata)] <- 0
@@ -287,12 +288,12 @@ tdata[is.na(tdata)] <- 0
 num <- tapply(ldata$matleave_13, ldata$region, length)
 
 # tapply() using mean(), sum(), and sd
-average <- 
-total <- 
-std <- 
+average <-
+total <-
+std <-
 
 # Creating data frame for about variables
-res <- 
+res <-
 res
 
 
