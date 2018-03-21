@@ -2,7 +2,7 @@
 # Slide: https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_302
 # Youtube: https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B
 pkgs <- c("readr", "httr", "RColorBrewer", "dplyr", "tidyr")
-pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])] 
+pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(pkgs)) install.packages(pkgs)
 
 
@@ -16,16 +16,17 @@ if(length(pkgs)) install.packages(pkgs)
 
 ### Download the data and pull into your project data folder
 ### Will raise error due to lack of fileEncoding argument
+df <- read.csv(url("http://data.taipei/opendata/datalist/datasetMeta?oid=68785231-d6c5-47a1-b001-77eec70bec02"))
 df <- read.csv("data/tp_theft.csv")
 ?read.csv
 
 ### Character will be converted to factor
-df <- read.csv("data/tp_theft.csv", 
+df <- read.csv("data/tp_theft.csv",
 			   fileEncoding = "big5")
 str(df)
 
-df <- read.csv("data/tp_theft.csv", 
-			   fileEncoding = "big5", 
+df <- read.csv("data/tp_theft.csv",
+			   fileEncoding = "big5",
 			   stringsAsFactors = F)
 str(df)
 
@@ -151,7 +152,7 @@ par(family=('STKaiti'))
 colors <- c('#D0104C', '#DB4D6D', '#E83015',  '#F75C2F',
             '#E79460', '#E98B2A', '#9B6E23', '#F7C242',
             '#BEC23F', '#90B44B', '#66BAB7', '#1E88A8')
-mosaicplot(res, color=colors, border=0, off = 3, 
+mosaicplot(res, color=colors, border=0, off = 3,
 		   main="Theft rate of Taipei city (region by hour)")
 
 
@@ -220,7 +221,7 @@ mosaicplot(res, color=pcolor, border=0, off = 3, main="Theft rate of Taipei city
 # A2. readr::read_csv() ---------------------------------------------------
 
 # As far as I'm concerned,
-# readr package provides "better" function to read files. 
+# readr package provides "better" function to read files.
 
 library(httr)
 url <- "http://data.nhi.gov.tw/Datasets/DatasetResource.ashx?rId=A21030000I-E30008-001"

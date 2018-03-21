@@ -94,7 +94,6 @@ sum(is.na(matleave))
 
 
 # Plot one row ------------------------------------------------------------
-dev.off()	# clean current plot
 
 # Plotting the second rows and all columns except 1st column
 barplot(unlist(matleave[2, -1]))
@@ -228,7 +227,14 @@ for (i in 1:nrow(m55)){
 
 # plotting for matleave_13 == 4
 
+# Select, and filter data in dplyr form
 
+# by dplyr
+library(dplyr)
+m55 <- ldata %>%
+    select(iso3, contains("matleave"), -contains("wrr")) %>%
+    mutate_if(is.numeric, function(x){ifelse(is.na(x), 0, x)}) %>%
+    filter(matleave_13==5, matleave_95==5)
 
 
 
@@ -353,12 +359,8 @@ for (i in 1:6){
 	title(byregion[i,1])
 }
 
-# by dplyr
-library(dplyr)
-m55 <- ldata %>%
-    select(iso3, contains("matleave"), -contains("wrr")) %>%
-    mutate_if(is.numeric, function(x){ifelse(is.na(x), 0, x)}) %>%
-    filter(matleave_13==5, matleave_95==5)
+
+
 
 # staySame version
 # staySame <- apply(m5[,2:20], 1, function(x) length(unique(x[!is.na(x)]))) == 1
