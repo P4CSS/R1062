@@ -4,6 +4,7 @@
 * Joining [Facebook page R1062](https://www.facebook.com/groups/R1062/) for calling for help and gathering.
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 * [**Download** whole project before lessons](https://www.dropbox.com/sh/12cev4z4q9ankwj/AADR77HGAAtIbtpO3jgNInfKa?dl=0)
+* [Youtube Video for review](https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B)
 
 ## Announcement
 * **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
@@ -15,7 +16,8 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
 
 ### W05-Read CSV and JSON
-* [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - 
+* [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) 
+* [AS#3. Reading open data](https://github.com/R4CSS/Assignments/blob/master/03_CSV_JSON.md#open-data). No later than 04/09 23:59. 
 
 ### W04-Read CSV and JSON
 * [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - [Video02-1 Paid Maternity Leave](https://youtu.be/65zI6Zrj2zo).
