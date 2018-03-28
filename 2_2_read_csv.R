@@ -16,7 +16,7 @@ if(length(pkgs)) install.packages(pkgs)
 
 ### Download the data and pull into your project data folder
 ### Will raise error due to lack of fileEncoding argument
-df <- read.csv(url("http://data.taipei/opendata/datalist/datasetMeta?oid=68785231-d6c5-47a1-b001-77eec70bec02"))
+df <- read.csv(url("http://data.taipei/opendata/datalist/datasetMeta/download;jsessionid=A97052570C470793042D8B2D33A849ED?id=68785231-d6c5-47a1-b001-77eec70bec02&rid=34a4a431-f04d-474a-8e72-8d3f586db3df"))
 df <- read.csv("data/tp_theft.csv")
 ?read.csv
 
