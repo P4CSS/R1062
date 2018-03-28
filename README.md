@@ -7,6 +7,12 @@
 
 ## Announcement
 * **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
+* You may need these code to view data.
+```
+Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
+Sys.setlocale(category = "LC_ALL", locale = "C") 
+Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
+```
 
 ### W05-Read CSV and JSON
 * [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - 
