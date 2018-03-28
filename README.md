@@ -1,16 +1,15 @@
 # https://github.com/R4CSS/R1062
-<<<<<<< HEAD
-* TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [])
-=======
 * TA: 新聞所洪郁雯 r05342005[@]ntu.edu.tw (remove [] please)
 * https://r4css.github.io/R1062/
 * Joining [Facebook page R1062](https://www.facebook.com/groups/R1062/) for calling for help and gathering.
->>>>>>> dfafe179c54e77e910eea404b389c7451f48ff77
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 * [**Download** whole project before lessons](https://www.dropbox.com/sh/12cev4z4q9ankwj/AADR77HGAAtIbtpO3jgNInfKa?dl=0)
 
 ## Announcement
 * **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
+
+### W05-Read CSV and JSON
+* [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - 
 
 ### W04-Read CSV and JSON
 * [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) - [Video02-1 Paid Maternity Leave](https://youtu.be/65zI6Zrj2zo).
