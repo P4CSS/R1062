@@ -1,11 +1,3 @@
-# Plotting ubike map ------------------------------------------------------
-
-# Slide: https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000&slide=id.g2074c710b4_0_302
-# Youtube: https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B
-
-# read ubike data than plot it on map by ggmap
-# https://blog.gtwang.org/r/r-ggmap-package-spatial-data-visualization/3/
-
 pkgs <- c("jsonlite", "httr", "ggmap", "ggplot2")
 pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])] 
 if(length(pkgs)) install.packages(pkgs)
@@ -20,7 +12,7 @@ options(stringsAsFactors = FALSE)
 # 1. Get and convert to an R object ---------------------------------------
 
 url <- "http://data.taipei/youbike"
-ubike.list <- fromJSON(content(GET(url),"text"))
+ubike.list <- fromJSON(content(GET(url),"text", encoding = "utf-8"))
 class(ubike.list) # list
 
 
@@ -34,7 +26,6 @@ ubike.v <- unlist(ubike.list$retVal)
 # Fold it by a specified width --> matrix
 ubike.m <- matrix(ubike.v, byrow = T, ncol = 14)
 
-
 # Convert the matrix to dataframe
 ubike.df <- as.data.frame(ubike.m)
 
@@ -43,8 +34,7 @@ ubike.df <- as.data.frame(ubike.m)
 # 3. Clean and reformat data ----------------------------------------------
 
 # Get field names from the first data entry and assign to ubike.df
-cname <- names(ubike.list$retVal$`0001`)
-names(ubike.df) <- cname
+names(ubike.df) <- names(ubike.list$retVal$`0001`)
 
 # Convert character vectors to numeric
 ubike.df$lng <- as.numeric(ubike.df$lng)
@@ -62,12 +52,8 @@ summary(ubike.df)
 
 
 
-
 # 5. Plot map by ggplot and ggmap -----------------------------------------
 
-# install.packages("ggplot2")
-# install.packages("ggmap") # may raise error
-# install.packages("ggmap", type = "source")
 library(ggplot2)
 library(ggmap)
 
@@ -105,15 +91,15 @@ assignColor <- function(ratio){
 # Question: How do it differ from tapply() ?
 ubike.df$color <- sapply(ubike.df$ratio, assignColor)
 
-ggmap(
-	get_googlemap(center=c(121.516898,25.055536),
-		zoom=12,
-		maptype='terrain')) +
-  geom_point(data=ubike.df, 
-  		   aes(x=lng, y=lat), 
-  		   colour=ubike.df$color, 
-  		   size=ubike.df$tot/10, 
-  		   alpha=0.4)
+ggmap(get_googlemap(center = c(121.516898,25.055536),
+					zoom = 12,
+					maptype = 'terrain')
+	  ) +
+geom_point(data = ubike.df, 
+		   aes(lng, lat), 
+		   colour = ubike.df$color, 
+		   size = ubike.df$tot/10, 
+		   alpha = 0.4)
 
 
 
@@ -125,18 +111,3 @@ map <- get_map(location = c(lon = 120.233937, lat = 22.993013),
 ggmap(map, darken = c(0.5, "white"))
 
 
-
-
-# Appendix: An easier way to access ubike data ----------------------------
-
-source <- "http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=ddb80380-f1b3-4f8e-8016-7ed9cba571d5"
-
-dataUBike <- fromJSON(readLines(source)[1])
-
-dataUBike <- as.data.frame(dataUBike$result$results)
-
-dataUBike$lng <- as.numeric(dataUBike$lng)
-dataUBike$lat <- as.numeric(dataUBike$lat)
-dataUBike$tot <- as.numeric(dataUBike$tot)
-
-ggmap(get_googlemap(center=c(121.516898,25.055536),zoom=12,maptype='roadmap'))+ geom_point(data=dataUBike, aes(x=lng, y=lat), colour='red', size=(dataUBike$tot/8), alpha=0.4)
