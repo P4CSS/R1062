@@ -15,6 +15,12 @@ Sys.setlocale(category = "LC_ALL", locale = "C")
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
 
+### W06-Get data from the web
+* [Slide03. crawler design](https://docs.google.com/presentation/d/e/2PACX-1vRW84XoB5sFRT1Eg-GrK4smX23qoNkFffz_h8oRU4AIvJAgrrxBn8059_0UeHv_pFBks_Z37vNbLGai/pub?start=false&loop=false&delayms=3000)
+* [Slide04. HTML Parser](https://docs.google.com/presentation/d/e/2PACX-1vSGeNG6BcEUNjhZjqo1obJ9bijuMjKJ0WhEva29-AuishNv779rSC0nDShfkR5HcWp4EdlRUBaaiG0M/pub?start=false&loop=false&delayms=3000)
+* [AS#4. Plotting Air Quality Index on Map](https://github.com/R4CSS/Assignments/blob/master/04_AQX.md). No later than 4/16, 23:59.
+
+
 ### W05-Read CSV and JSON
 * [Slide02. Read csv and json](https://docs.google.com/presentation/d/e/2PACX-1vTFRVkwdscR3QNdVD6Q8JEKshlORtgdP_DUq19HPjbO6_8nN3ADTEtxuOr_Z28t3HKGdf9_m3icULpO/pub?start=false&loop=false&delayms=3000) 
 * [AS#3. Reading open data](https://github.com/R4CSS/Assignments/blob/master/03_CSV_JSON.md#open-data). No later than 04/09 23:59. 
