@@ -17,6 +17,12 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 
 ### W07-Parsing HTML
 * [Slide04. HTML Parser](https://docs.google.com/presentation/d/e/2PACX-1vSGeNG6BcEUNjhZjqo1obJ9bijuMjKJ0WhEva29-AuishNv779rSC0nDShfkR5HcWp4EdlRUBaaiG0M/pub?start=false&loop=false&delayms=3000)
+* 為了通熟本章節，你會需要額外花時間了解何謂html、css、xpath？在html中，id和class的目的為何？有和特性？何謂html元素（element）？何謂html元素的屬性（attribute）？
+* 你可以略讀參考w3school所提供的說明，無論是英文或者切至中文畫面。
+	* [Learning html](https://www.w3schools.com/html/default.asp): 包含Introduction, Basic, Elements, Attributes, Headings, CSS, Links, Blocks, Images, Tables, Lists, Classes, Id等節。
+	* [css syntax](https://www.w3schools.com/css/css_syntax.asp)。
+	* [css combinator](https://www.w3schools.com/css/css_combinators.asp)。
+	* [xpath introduction](https://www.w3schools.com/xml/xpath_intro.asp)
 
 ### W06-Get data from the web
 * [Slide03. crawler design](https://docs.google.com/presentation/d/e/2PACX-1vRW84XoB5sFRT1Eg-GrK4smX23qoNkFffz_h8oRU4AIvJAgrrxBn8059_0UeHv_pFBks_Z37vNbLGai/pub?start=false&loop=false&delayms=3000)
