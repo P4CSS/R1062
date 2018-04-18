@@ -23,6 +23,7 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 	* [css syntax](https://www.w3schools.com/css/css_syntax.asp)。
 	* [css combinator](https://www.w3schools.com/css/css_combinators.asp)。
 	* [xpath introduction](https://www.w3schools.com/xml/xpath_intro.asp)
+* [AS#5 Crawling news media search page](https://github.com/R4CSS/Assignments/blob/master/assignments.md#crawling-news-search-results). No later than 4/23 23:59. 
 
 ### W06-Get data from the web
 * [Slide03. crawler design](https://docs.google.com/presentation/d/e/2PACX-1vRW84XoB5sFRT1Eg-GrK4smX23qoNkFffz_h8oRU4AIvJAgrrxBn8059_0UeHv_pFBks_Z37vNbLGai/pub?start=false&loop=false&delayms=3000)
