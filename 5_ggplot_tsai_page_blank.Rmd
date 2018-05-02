@@ -1,0 +1,348 @@
+---
+title: "Page Analysis by Tsai"
+output:
+  html_notebook:
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+
+
+
+# Plot multiple lines by base and ggplot2
+
+```{r read data}
+df <- readr::read_tsv("data/EV_TP_10_16.csv")
+df <- df[-1]
+df <- df[-nrow(df), ]
+names(df)
+head(df)
+```
+
+
+
+
+## Plot by matplot()
+```{r}
+matplot(df, type="l", col = 1:7)
+legend("topleft", legend = names(df), col=names(df), pch=1)
+```
+
+
+
+
+
+## Plot by ggplot2
+
+```{r}
+library(ggplot2)
+weeks <- 1:52
+ggplot(df, aes(x=weeks)) +
+  geom_line(aes(y = `2010`), color="grey") + 
+  geom_line(aes(y = `2011`), color = "black") + 
+  geom_line(aes(y = `2012`), color = "blue") + 
+  geom_line(aes(y = `2013`), color = "green") + 
+  geom_line(aes(y = `2014`), color = "cyan") + 
+  geom_line(aes(y = `2015`), color = "yellow") + 
+  geom_line(aes(y = `2016`), color = "red") + 
+  ylab(label="Number of infected cases") + 
+  xlab("Week")
+```
+
+
+
+
+
+# Tsai's fan page as the case
+
+* The page is a replication of [Dr. Tseng's R Book ](http://yijutseng.github.io/DataScienceRBook/vis.html#ggplot2). The book is very suitable for novice without putting any emphasis on statistical analysis or text analysis. 
+
+
+
+# Loading data
+
+```{r import library, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r read rds, message=FALSE, warning=FALSE}
+post <- readRDS("data/posts_tsai.rds")
+# sum(is.na(post$shares_count)) # 947
+# sum(is.na(post$likes_count)) # 0
+# sum(is.na(post$comments_count)) # 0
+
+```
+
+
+## filter 2016 posts by year
+
+* Filter posts from 2016-01-01 to 2017-01-01
+* Create new variables ```hour```, ```month```, and ```week```.
+
+
+```{r}
+
+# Filter post with date > '2016-01-01'
+
+
+# Filter post with date > '2016-01-01'
+
+
+library(lubridate)
+
+# Create a new hour variable 
+post2016$hour <- hour(post2016$created_time)
+
+# Create month and week variables
+
+summary(post2016)
+
+```
+
+
+
+
+
+
+## Filter year 2016 posts by dplyr and magrittr
+
+```{r}
+post2016 <- filter(post, created_time > as.POSIXlt('2016-01-01'))
+# Filter out created_time < 2017-01-01
+
+post2016 <- mutate(post2016, hour = hour(created_time))
+# create month and week variables
+
+```
+
+
+
+
+```{r filter 2016, warning=FALSE}
+post2016 <- post %>%
+	filter(created_time > as.POSIXlt('2016-01-01')) %>%
+	filter(created_time < as.POSIXlt('2017-01-01'))
+
+
+
+
+summary(post2016)
+```
+
+```{r}
+post2016 <- post %>%
+	filter(created_time > as.POSIXlt('2016-01-01'), 
+		   created_time < as.POSIXlt('2017-01-01')) %>%
+	mutate(hour = hour(post2016$created_time), 
+		   month = month(post2016$created_time), 
+		   week = week(post2016$created_time))
+summary(post2016)
+```
+
+
+
+
+
+# Summarize data
+
+## summarize by tapply(), aggregate()
+
+```{r}
+likes_byhour <- with(post2016, tapply(likes_count, hour, mean))
+
+# summarize mean of comment_count by hour 
+
+
+# Using aggregate to summarize multiple variables
+summary <- aggregate(cbind(likes_count, comments_count, shares_count)~hour, data=post2016, mean, na.rm=TRUE)
+
+# Using aggregate to summarized multiple variables by more than 1 var.
+summary <- aggregate(cbind(likes_count, comments_count, shares_count)~hour+week, data=post2016, sum, na.rm=TRUE)
+```
+
+
+## summarize by dplyr 
+```{r}
+# Generate more variables including sum_share, sum_like, 
+# sd_comment, sd_share, sd_like
+
+summary <- post2016 %>%
+	group_by(hour) %>%
+	summarize(
+		n = n(),
+		mean_comment = mean(comments_count, na.rm = T), 
+		mean_share = mean(shares_count, na.rm = T),
+		mean_like = mean(likes_count, na.rm = T)
+	)
+
+```
+
+
+
+
+# Plotting by plot{base}
+
+* Take a look at my [R Facebook Page Analysis](https://paper.dropbox.com/doc/R-facebook-page-analysis-bA84isNxVBoonyQKLbK49) to learn how to plot by base package. 
+
+## plot() scatter
+```{r}
+post2016 <- post2016 %>%
+	mutate(nchar = ifelse(is.na(message), 0, log(nchar(message))))
+plot(post2016$nchar, post2016$hour, xlab='nchar', ylab='time(hour)') 
+# pch=1: label style; cex=1: label size
+```
+
+```{r}
+myScatter<- function(x, y, xlab, ylab, ylim){
+  plot(y~x, xlab=xlab, ylab=ylab, pch=1, ylim = c(1, ylim))
+  abline(lm(y~x), col="red") # regression line (y~x)
+}
+par(mfrow=c(3, 1), mai=c(0.3, 0.3, 0.3, 0.3))
+with(post2016, myScatter(hour, comments_count, 'comments', 'hour', 5000))
+with(post2016, myScatter(hour, shares_count, 'shares', 'hour', 5000))
+with(post2016, myScatter(hour, likes_count, 'likes', 'hour', 100000))
+```
+
+
+## Assigning color by groups
+```{r}
+selected <- post2016 %>%
+	select(likes_count, comments_count) %>%
+	na.omit()
+
+# k-mean cluster
+cres <- kmeans(selected, 3)
+# cres$centers
+# cres$cluster
+colors <- c("#FF0000", "#00FF00", "#0000FF")
+selected$color <- colors[cres$cluster]
+
+plot(log(selected$likes_count), log(selected$comments_count), col=selected$color)
+
+
+```
+
+# Practice
+* Plot to explore relationships between other pairs of variables
+```{r}
+	
+```
+
+
+
+# Plotting by qplot of ggplot2
+```{r}
+library(ggplot2)
+```
+
+
+
+##　qplot: Relationship between shares and likes
+* ```jitter``` moves overlapped nodes slightly, while ```alpha value``` provices transparnt function, which can help to solve overplotting problem.
+```{r}
+qplot(comments_count, likes_count, color = type, data = post2016, geom = "jitter", alpha=I(0.2))
+qplot(log(likes_count), hour, color = type, data = post2016, geom = "jitter", alpha=I(0.5))
+```
+## qplot with trend curve
+```{r}
+qplot(comments_count, likes_count, color = type, data = post2016, geom = c("point", "smooth"))
+qplot(comments_count, likes_count, color = type, data = post2016, geom = c("point", "smooth"), method="lm")
+```
+## qplot density function of different types
+```{r}
+qplot(log(likes_count), data = post2016, geom = "density")
+qplot(likes_count, data = post2016, geom="density", color = type)
+```
+## qplot histogram
+
+```{r}
+qplot(likes_count, data = post2016, geom="histogram", fill = type)
+```
+
+
+```{r}
+qplot(likes_count, data = post2016, fill = type)
+qplot(comments_count, data = post2016, fill = type)
+```
+## qplot: Relationship between comments and likes counts, categorized by types
+```{r}
+qplot(comments_count, likes_count, data = post2016, facets = . ~ type)
+```
+## qplot: comments count distribution categorized by types
+```{r}
+qplot(comments_count, likes_count, data = post2016, color=factor(type), facets = type ~ .)
+```
+## qplot: likes count distribution categorized by types
+```{r}
+qplot(likes_count, data = post2016, color = factor(type), facets = type ~ ., binwidth = 1000)
+```
+
+# ggplot2
+* Very good introduction to color of ggplot2 http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+
+## Scatter
+
+
+
+* Original qplot is ```qplot(comments_count, likes_count, color = type, data = post2016, geom = "jitter", alpha=I(0.2))```
+
+```{r}
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+post2016 %>%
+	ggplot() +
+	aes(comments_count, likes_count, color = factor(type)) +
+	geom_point(alpha = 0.5) +
+	geom_jitter() +
+	scale_colour_manual(values=cbPalette)
+```
+
+
+
+## Bar chart
+* ```geom_bar``` uses ```stat_count``` by default: it counts the number of cases at each x position. 
+* ```geom_col``` uses ```stat_identity```: it leaves the data as is.
+```{r}
+post2016 %>%
+	ggplot() +
+	aes(hour) + 
+	geom_bar(fill = "red")
+
+post2016 %>%
+	count(hour) %>%
+	ggplot() +
+	aes(hour, n) + 
+	geom_bar(stat = "identity", fill = "red") + 
+	geom_smooth()
+
+post2016 %>%
+	count(hour) %>%
+	ggplot() +
+	aes(hour, n) + 
+	geom_col(fill = "red") + 
+	geom_smooth()
+
+
+```
+```{r}
+post2016 %>%
+	mutate(nchar = ifelse(is.na(message), 0, nchar(message))) %>%
+	ggplot(aes(hour, nchar, color=factor(type))) +
+	geom_point(alpha = 0.1) + 
+	facet_grid(type ~ .) + 
+	geom_smooth(method = "lm") + 
+	geom_jitter() + 
+	scale_colour_brewer(palette="Spectral")
+
+post2016 %>%
+	ggplot(aes(week, shares_count, color=factor(type))) +
+	geom_point(alpha = 0.2) + 
+	facet_grid(. ~ type) + 
+	geom_smooth() + 
+	geom_jitter() + 
+	scale_colour_manual(values = c("gray", "red", "gray", "gray"))
+```

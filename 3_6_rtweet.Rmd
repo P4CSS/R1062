@@ -1,0 +1,105 @@
+---
+title: "3_6_rtweet"
+output: 
+  html_notebook: 
+    code_folding: hide
+    number_sections: true
+    fig_caption: yes
+    highlight: textmate
+    theme: simplex
+    toc: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+# INFO
+* http://rtweet.info/
+
+## Create twitter app to get data 
+
+Follow the instruction http://rtweet.info/articles/auth.html
+
+1. Visit http://apps.twitter.com
+2. Create New App
+3. Fill in app Name, Description, Website (such as http://www.ntu.edu.tw), callback URL(for RStudio, should be http://127.0.0.1:1410), **SERIOUSLY**!
+4. View your app and select the tab "Keys and Access Tokens"
+5. Copy your *consumer Key* and *Consumer Secret*. 
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+# install.packages("rtweet")
+library(rtweet)
+library(stringr)
+library(tidyverse)
+library(tidytext)
+browseURL("http://rtweet.info/")
+```
+
+# Setting tokens
+* http://rtweet.info/articles/auth.html
+```{r}
+browseURL("http://rtweet.info/articles/auth.html")
+```
+
+
+# Search tweets
+```{r}
+tweets <- search_tweets(
+  "#taiwan", n = 10000, include_rts = FALSE
+)
+tweets %>% names
+```
+
+# Filtering data
+```{r}
+filtered.df <- tweets %>%
+    filter(!str_detect(text, '^"')) %>%
+	mutate(timestamp = as.POSIXct(created_at)) %>%
+	select("status_id", "user_id", "screen_name", "text", 
+		   "source", "reply_to_user_id", "reply_to_screen_name",
+		   "is_quote", "is_retweet")
+head(filtered.df, n=3)
+```
+
+# Get more hashtags from text
+```{r}
+unnested.df <- filtered.df %>%
+    unnest_tokens(word, text, 
+                  token = "regex", pattern = "[^A-Za-z\\d#@']", 
+                  drop=FALSE) 
+
+hashtags.df <- unnested.df %>%
+	filter(str_detect(word, "^#")) %>%
+	filter(nchar(word) > 1) %>%
+	mutate(text = str_to_lower(text)) %>%
+	filter(str_detect(text, "#dominicanrepublic"))
+```
+
+
+# Descriptive analysis of hashtags
+```{r}
+hashtags.df %>% count(word, sort = T)
+
+top_user <- hashtags.df %>% count(user_id, sort = T) %>%
+	slice(1:20)
+
+users <- lookup_users(top_user$user_id, parse = T)
+
+```
+
+# Assignment: tweets data
+* Propose and run your idea to analyze tweets
+* What kinds of topic do you watch?
+
+
+# Get data by specific token
+```{r}
+token1 <- create_token(app = "YOUR_APP_NAME",
+             consumer_key = "YOUR_API_KEY",
+             consumer_secret = "YOUR_API_SECRET")
+fls <- get_followers(x, n = 75000, token = token1)
+```
+
+
+
+
