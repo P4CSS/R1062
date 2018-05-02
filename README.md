@@ -15,7 +15,7 @@ Sys.setlocale(category = "LC_ALL", locale = "C")
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
 ### W10-Getting tweets and doing exploratory data analysis
-* [AS#? Getting tweets and doing exploratory data analysis](https://github.com/R4CSS/Assignments/blob/master/06_twitter_EDA.md#scraping-twitter-data-dand-doing-exploratory-data-analysis)
+* [AS#7 Getting tweets and doing exploratory data analysis](https://github.com/R4CSS/Assignments/blob/master/06_twitter_EDA.md#scraping-twitter-data-dand-doing-exploratory-data-analysis)
 
 
 ### W07-Parsing HTML
