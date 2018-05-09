@@ -5,7 +5,6 @@
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 * [**Download** whole project before lessons](https://www.dropbox.com/sh/12cev4z4q9ankwj/AADR77HGAAtIbtpO3jgNInfKa?dl=0)
 * [Youtube Video for review](https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B)
-* [Topic preview and review](https://docs.google.com/spreadsheets/d/1SuEfbrDWFWKcw867h6eEHYCtkLeQIPjx8DuNKo96lnU/edit#gid=0)
 
 ## Announcement
 ```
@@ -17,6 +16,8 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ### W11-ggplot and exploratory data analysis
 * [Slide05. ggplot](https://docs.google.com/presentation/d/e/2PACX-1vR0MIoaDm9YaEvop3wYAYHnr5O-kCPtK2AlS9QR8zpgeoCBQCfJ39q55VrK4RvM_UJg18JDQa1I_pgJ/pub?start=false&loop=false&delayms=3000)
 * [AS#8 EDA and text mining on tweets](https://github.com/R4CSS/Assignments/blob/master/07_tweet_text_mining.md#text-mining-tweet-data)
+* [Topic preview and review](https://docs.google.com/spreadsheets/d/1SuEfbrDWFWKcw867h6eEHYCtkLeQIPjx8DuNKo96lnU/edit#gid=0)
+
 
 ### W10-Getting tweets and doing exploratory data analysis
 * [AS#7 Getting tweets and doing exploratory data analysis](https://github.com/R4CSS/Assignments/blob/master/06_twitter_EDA.md#scraping-twitter-data-dand-doing-exploratory-data-analysis)
