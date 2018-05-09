@@ -5,6 +5,7 @@
 * [A cheatsheet to look up commands](RCheatSheep.pdf)
 * [**Download** whole project before lessons](https://www.dropbox.com/sh/12cev4z4q9ankwj/AADR77HGAAtIbtpO3jgNInfKa?dl=0)
 * [Youtube Video for review](https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B)
+* [Topic preview and review](https://docs.google.com/spreadsheets/d/1SuEfbrDWFWKcw867h6eEHYCtkLeQIPjx8DuNKo96lnU/edit#gid=0)
 
 ## Announcement
 ```
