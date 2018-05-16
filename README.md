@@ -12,6 +12,9 @@ Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
 Sys.setlocale(category = "LC_ALL", locale = "C") 
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
+### W12-trump's case and Chinese text processing
+* [Slide06. dplyr_trump's tweet](https://docs.google.com/presentation/d/e/2PACX-1vRNLWSWiTePNA5tmAhFcbkFWEzfa0LFiG0FENhalVpxz2lG2Z1lZ8pJHacaKHWpnC1SYhR-qxQOnKb7/pub?start=false&loop=false&delayms=3000)
+* []
 
 ### W11-ggplot and exploratory data analysis
 * [Slide05. ggplot](https://docs.google.com/presentation/d/e/2PACX-1vR0MIoaDm9YaEvop3wYAYHnr5O-kCPtK2AlS9QR8zpgeoCBQCfJ39q55VrK4RvM_UJg18JDQa1I_pgJ/pub?start=false&loop=false&delayms=3000)
