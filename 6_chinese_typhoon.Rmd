@@ -1,0 +1,210 @@
+---
+title: "TM02_news_typhoon"
+output: 
+  html_notebook: 
+    code_folding: hide
+    number_sections: true
+    fig_caption: yes
+    highlight: zenburn
+    theme: simplex
+    toc: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Loading data and library
+```{r}
+library(tidyverse)
+library(stringr)
+library(tidytext)
+library(jiebaR)
+library(lubridate)
+```
+```{r}
+news.df <- readRDS("data/typhoon.rds") %>%
+    mutate(doc_id = row_number())
+```
+
+
+# Tokenization
+
+## Initialize cutter()
+* Also loading stopWords
+```{r}
+segment_not <- c("第卅六條", "第卅八條", "蘇南成", "災前", "災後", "莫拉克", "颱風", "應變中心", "停班停課", "停課", "停班", "停駛", "路樹", "里長", "賀伯", "採收", "菜價", "蘇迪", "受災戶", "颱風警報", "韋恩", "台東縣", "馬總統", "豪大雨", "梅姬", "台東", "台北市政府", "工務段", "漂流木", "陳菊", "台南縣", "卡玫基", "魚塭", "救助金", "陳情", "全省", "強颱", "中颱", "輕颱", "小林村", "野溪", "蚵民", "農委會", "來襲", "中油公司", "蔣總統經國", "颱風天", "土石流", "蘇迪勒", "水利署", "陳說", "颱風假", "颱風地區", "台灣", "臺灣", "柯羅莎", "八八風災", "紓困","傅崑萁", "傅崐萁","台中", "文旦柚", "鄉鎮市公所", "鄉鎮市", "房屋稅", "高雄", "未達", "台灣省", "台北市")
+cutter <- worker()
+new_user_word(cutter, segment_not)
+stopWords <- readRDS("data/stopWords.rds")
+```
+
+```{r}
+news.df$time %>% summary
+
+tokenized.df <- news.df %>%
+    mutate(timestamp=ymd(time)) %>% 
+    filter(timestamp > as.Date("2009-01-01")) %>%
+    select(-time) %>%
+    select(title, text, cat, timestamp, everything()) %>%
+    mutate(word = purrr::map(text, function(x)segment(x, cutter)))
+
+unnested.df <- tokenized.df %>%
+    select(doc_id, text, word) %>%
+    unnest(word) %>%
+    filter(!(word %in% stopWords$word)) %>%
+    filter(!str_detect(word, "[a-zA-Z0-9]+"))
+```
+
+
+## Word frequency distribution
+
+```{r}
+word.count <- tokenized.df %>%
+    unnest(word) %>%
+    count(word, sort=T) %>%
+    filter(!(word %in% stopWords$word)) %>%
+    filter(nchar(word) > 1) %>%
+    filter(!str_detect(word, "[a-zA-Z0-9]+")) %>%
+    filter(n > 3)
+
+
+word.count %>%
+    count(n, sort=T) %>%
+    ggplot(aes(log(n), log(nn))) + 
+    geom_point(alpha=0.5, size = 1, color="#333333")
+```
+
+
+
+```{r}
+cat_word_count <- tokenized.df %>%
+    unnest(word) %>%
+    count(cat, word) %>%
+    ungroup() %>%
+    filter(!str_detect(word, "[a-zA-Z0-9]+")) %>%
+	filter(!(word %in% stopWords$word)) %>%
+    filter(nchar(word)>1)
+```
+
+```{r}
+early_lat_ratio <- cat_word_count %>%
+	filter(n>1) %>%
+	spread(cat, n, fill = 0) %>%
+	ungroup() %>%
+    mutate_if(is.numeric, funs((. + 1) / sum(. + 1))) %>%
+	mutate(logratio = log2(early / lat)) %>%
+	arrange(desc(logratio))
+```
+
+
+```{r}
+early_lat_ratio %>%
+	group_by(logratio > 0) %>%
+	top_n(20, abs(logratio)) %>%
+	ungroup() %>%
+	mutate(word = reorder(word, logratio)) %>%
+	ggplot(aes(word, logratio, fill = logratio < 0)) +
+	geom_bar(stat = "identity") +
+	coord_flip() +
+	ylab("early / recent log ratio") +
+	scale_fill_manual(name = "", labels = c("early", "recent"),
+		values = c("tomato", "lightblue")) +
+	theme(axis.text.y=element_text(colour="black", family="Heiti TC Light"))
+
+```
+
+```{r}
+frequency <- cat_word_count %>%
+    filter(n>3) %>%
+    group_by(cat) %>%
+    mutate(proportion = n/sum(n)) %>%
+    select(-n) %>%
+    spread(cat, proportion) %>%
+    na.omit()
+```
+
+```{r}
+library(scales)
+frequency %>%
+ggplot(aes(x = early, y = lat, color = abs(early - lat))) + 
+    geom_abline(color = "gray40", lty = 2) +
+    geom_point(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) + 
+    geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5, family="Heiti TC Light") +
+    scale_x_log10(labels = percent_format()) +
+    scale_y_log10(labels = percent_format()) +
+    theme(legend.position="none") + 
+    coord_fixed(1)
+```
+
+```{r}
+word_count <- tokenized.df %>%
+    unnest(word) %>%
+    count(cat, word, sort=T) %>%
+    mutate(total_words=sum(n)) %>%
+    mutate(rank=row_number(), tf=n/total_words)
+```
+
+```{r}
+ggplot(word_count, aes(tf, fill=cat)) + 
+    geom_histogram(show.legend = F) + 
+    xlim(NA, 0.0009) + 
+    # scale_x_log10() + 
+    # scale_y_log10() + 
+    facet_wrap(~cat, ncol=2, scales="free_y")
+```
+
+```{r}
+word_count %>%
+    ggplot(aes(rank, tf, color=cat)) + 
+    geom_line(size=1.1, alpha=0.5, show.legend = F) + 
+    scale_x_log10() + 
+    scale_y_log10()
+```
+```{r}
+rank_subset <- word_count %>%
+    filter(rank < 500,
+           rank > 10)
+
+lm_result <- lm(log10(tf) ~ log10(rank), data = rank_subset)
+lm_result$coefficients[[1]]
+```
+```{r}
+word_count %>% 
+  ggplot(aes(rank, tf, color = cat)) + 
+  geom_abline(intercept = lm_result$coefficients[[1]], 
+              slope = lm_result$coefficients[[2]], 
+              color = "gray50", linetype = 2) +
+  geom_line(size = 1.1, alpha = 0.8, show.legend = FALSE) + 
+  scale_x_log10() +
+  scale_y_log10()
+```
+```{r}
+news_count <- tokenized.df %>%
+    unnest(word) %>%
+    count(link, word) %>%
+    bind_tf_idf(word, link, n) %>%
+    arrange(desc(tf_idf))
+
+news_count %>%
+    ggplot(aes(tf_idf)) +
+    geom_histogram(bins = 100) + 
+    scale_x_log10()
+
+```
+
+
+```{r}
+news_count %>%
+    left_join(news.df, by="link") %>%
+    filter(!(word %in% c("NA"))) %>%
+    group_by(cat) %>%
+    arrange(desc(tf_idf)) %>%
+    top_n(30, tf_idf) %>%
+    ungroup() %>%
+    mutate(word = reorder(word, tf_idf)) %>%
+    ggplot(aes(word, tf_idf, fill = cat)) +
+    geom_col(show.legend = FALSE) +
+    labs(x = NULL, y = "tf-idf") +
+    facet_wrap(~cat, ncol = 2, scales = "free") +
+    coord_flip() + 
+    theme(axis.text.y=element_text(family="Heiti TC Light"))
+```
