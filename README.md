@@ -7,16 +7,20 @@
 * [Youtube Video for review](https://www.youtube.com/playlist?list=PLK0n8HKZQ_VfJcqBGlcAc0IKoY00mdF1B)
 
 ## Announcement
-* **Running** the `0_install_pkgs.R` at home to install all packages before next lessons.
-* You may need these code to view data.
 ```
 Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
 Sys.setlocale(category = "LC_ALL", locale = "C") 
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
+
+### W11-ggplot and exploratory data analysis
+* [Slide05. ggplot](https://docs.google.com/presentation/d/e/2PACX-1vR0MIoaDm9YaEvop3wYAYHnr5O-kCPtK2AlS9QR8zpgeoCBQCfJ39q55VrK4RvM_UJg18JDQa1I_pgJ/pub?start=false&loop=false&delayms=3000)
+* [AS#8 EDA and text mining on tweets](https://github.com/R4CSS/Assignments/blob/master/07_tweet_text_mining.md#text-mining-tweet-data)
+* [Topic preview and review](https://docs.google.com/spreadsheets/d/1SuEfbrDWFWKcw867h6eEHYCtkLeQIPjx8DuNKo96lnU/edit#gid=0)
+
+
 ### W10-Getting tweets and doing exploratory data analysis
 * [AS#7 Getting tweets and doing exploratory data analysis](https://github.com/R4CSS/Assignments/blob/master/06_twitter_EDA.md#scraping-twitter-data-dand-doing-exploratory-data-analysis)
-
 
 ### W07-Parsing HTML
 * [Slide04. HTML Parser](https://docs.google.com/presentation/d/e/2PACX-1vSGeNG6BcEUNjhZjqo1obJ9bijuMjKJ0WhEva29-AuishNv779rSC0nDShfkR5HcWp4EdlRUBaaiG0M/pub?start=false&loop=false&delayms=3000)
