@@ -12,9 +12,13 @@ Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
 Sys.setlocale(category = "LC_ALL", locale = "C") 
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ```
+
+### W13-Topic modeling
+* [Slide07. Processing Chinese text and topic modeling](https://docs.google.com/presentation/d/e/2PACX-1vRTSSO_8JuLTK_1OyM9eDrogA-K2fhXQwlKxh1PpRvNavkurCCcKBNftv9MpKGYM6EDXtNnqZvPDdKy/pub?start=false&loop=false&delayms=3000)
+* 
+
 ### W12-trump's case and Chinese text processing
 * [Slide06. dplyr_trump's tweet](https://docs.google.com/presentation/d/e/2PACX-1vRNLWSWiTePNA5tmAhFcbkFWEzfa0LFiG0FENhalVpxz2lG2Z1lZ8pJHacaKHWpnC1SYhR-qxQOnKb7/pub?start=false&loop=false&delayms=3000)
-* [Slide07. Processing Chinese text and topic modeling](https://docs.google.com/presentation/d/e/2PACX-1vRTSSO_8JuLTK_1OyM9eDrogA-K2fhXQwlKxh1PpRvNavkurCCcKBNftv9MpKGYM6EDXtNnqZvPDdKy/pub?start=false&loop=false&delayms=3000)
 * AS#9 Using **your own** data (no matter in English or in Chinese) to practice text processing skills (At least 3 charts).
 
 ### W11-ggplot and exploratory data analysis
