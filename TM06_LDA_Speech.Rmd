@@ -26,6 +26,12 @@ editor_options:
 # Loading
 
 ```{r}
+install.packages("widyr")
+install.packages("topicmodels")
+install.packages("igraph")
+install.packages("ggraph")
+
+
 library(tidyverse)
 library(tidyr) # for unnest()
 library(stringr)
@@ -37,7 +43,8 @@ library(dplyr)
 
 # install.packages("devtools")
 # devtools::install_github("qinwf/ropencc") # Convert S to Trad
-
+browseURL("https://docs.google.com/presentation/d/e/2PACX-1vRTSSO_8JuLTK_1OyM9eDrogA-K2fhXQwlKxh1PpRvNavkurCCcKBNftv9MpKGYM6EDXtNnqZvPDdKy/pub?start=false&loop=false&delayms=3000&slide=id.g2c8ba90947_0_0")
+browseURL("https://www.tidytextmining.com/ngrams.html")
 ```
 
 
@@ -100,15 +107,79 @@ stopWords <- union(stopWords, added)
 ```{r}
 library(tidyr) # for unnest()
 library(stringr)
-doc_term_count <- docs %>%
+unnested.df  <- docs %>%
 	select(title, words) %>%
 	unnest(words) %>%
 	filter(!is.na(words)) %>%
-	count(title, words) %>%
-	ungroup() %>%
 	filter(!str_detect(words, "[a-zA-Z0-9]+")) %>%
 	filter(!(words %in% stopWords))
+
+doc_term_count <- unnested.df %>%
+    count(title, words)
+
+
 ```
+
+# Term network
+```{r}
+library(widyr)
+word_pairs <- unnested.df %>%
+    pairwise_count(words, title, sort = TRUE)
+
+word_corr <- unnested.df %>%
+    group_by(words) %>%
+    filter(n() > 20) %>%
+    pairwise_cor(words, title, sort = TRUE)
+    
+    
+```
+
+
+```{r}
+library(igraph)
+library(ggraph)
+word_pairs %>%
+    ggplot(aes(n)) +
+    geom_density()
+
+set.seed(2016)
+word_pairs %>%
+  filter(n > 3) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE) +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), repel = F, family = "Heiti TC Light") +
+  theme_void()
+
+
+
+```
+
+
+
+
+```{r}
+
+
+
+
+word_corr %>%
+    ggplot(aes(correlation)) +
+    geom_density()
+
+set.seed(2016)
+word_corr %>%
+  filter(correlation > .75) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = correlation), show.legend = FALSE) +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), repel = F, family = "Heiti TC Light") +
+  theme_void()
+```
+
+
 
 
 # Building DocumentTermMatrix
@@ -298,7 +369,7 @@ nodeLabel = V(g)$name
 E(g)$color =  unlist(lapply(sample(colors()[26:137], 16), function(i) rep(i, 9)))
 plot(g, vertex.label= nodeLabel,  edge.curved=TRUE,
 	 vertex.label.cex = 1,  edge.arrow.size=0.1, layout=l,
-	 vertex.label.family='Heiti TC Light',)
+	 vertex.label.family='Heiti TC Light')
 ```
 
 # LDAVis
@@ -308,6 +379,7 @@ plot(g, vertex.label= nodeLabel,  edge.curved=TRUE,
 * https://gist.github.com/christophergandrud/00e7451c16439421b24a
 * http://christophergandrud.blogspot.tw/2015/05/a-link-between-topicmodels-lda-and.html
 
+
 ```{r}
 # install.packages("LDAvis")
 library(LDAvis)
@@ -315,8 +387,6 @@ library(LDAvis)
 m <- cast_sparse(doc_term_count, title, words, n)
 # dim(m)
 # class(m)
-
-
 nword_per_doc <- doc_term_count %>%
     group_by(title) %>%
     summarize(total = sum(n)) %>%
@@ -335,7 +405,6 @@ shinyJSON = createJSON(
     vocab = dtm_lda@terms,
     term.frequency = colSums(as.matrix(m)))
 serVis(shinyJSON)
-
 ```
 
 ## The 2nd solution
@@ -372,14 +441,6 @@ topicmodels_json_ldavis <- function(fitted, corpus, doc_term){
 # Evaluating topic number
 
 ```{r}
-# install.packages("ldatuning")
-library(ldatuning)
-
-=======
-
-# Evaluating topic number
-```{r}
->>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
 control_list_gibbs <- list(
 	burnin = 2500,
 	iter = 5000,
@@ -387,13 +448,8 @@ control_list_gibbs <- list(
 	nstart = 5,
 	best = TRUE
 )
-<<<<<<< HEAD
-
-
-=======
 # install.packages("ldatuning")
 library(ldatuning)
->>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
 
 system.time(
 	topic_number_lemma <- FindTopicsNumber(
@@ -444,14 +500,8 @@ lda.df %>%
 ```
 
 
-<<<<<<< HEAD
-
-
 # Correlated Topic Modeling
 * topic modeling比較適合類似新聞的文章，長度夠長，一篇文章內有多個主題，比較不適合類似社群資料等短文。而CTM（Correlated Topic Modeling）則是設計用來處理短文的主題分析。
-=======
-# Correlated Topic Modeling
->>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
 
 ```{r}
 ctm.list <- lapply(n_topics, function(k){
@@ -460,12 +510,6 @@ ctm.list <- lapply(n_topics, function(k){
 })
 # lda.df <- do.call(rbind, lda.list)
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
 ```
 
 
