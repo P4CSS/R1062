@@ -19,6 +19,7 @@ library(stringr)
 library(tidytext)
 library(jiebaR)
 library(lubridate)
+
 ```
 ```{r}
 news.df <- readRDS("data/typhoon.rds") %>%

@@ -1,0 +1,479 @@
+---
+title: "6_LDA Speech"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+# Introduction
+* Using dataset https://data.gov.tw/dataset/42540 
+
+## Process-of
+1. Getting word tokens by `doc_term_count <- unnest()`
+2. Building DocumentTermMatrix by `dtm <- tidytext::cast_dtm(doc_term_count, title, words, n)`
+1. Getting word tokens by `word_token <- unnest()`
+2. Building DocumentTermMatrix by `dtm <- tidytext::cast_dtm(word_token, title, words, n)`
+3. Modeling by `dtm_lda <- topicmodels::LDA(dtm, k = 16, control = list(seed = 1234))`
+4. Results
+	1. Visualize word-topic probability by `dtm_topics <- tidy(dtm_lda, matrix = "beta")`
+	2. Getting document-topic probability
+	3. Building term network
+5. Evaluation
+	1. Calculating perplexity by different number of topics
+	2. Evaluating by `library(ldatuning)`
+
+
+
+# Loading
+
+```{r}
+library(tidyverse)
+library(tidyr) # for unnest()
+library(stringr)
+library(jiebaR)
+library(dplyr)
+# " xcode-select --install"
+# install.packages("http://download.r-forge.r-project.org/src/contrib/tmcn_0.2-9.tar.gz", repos = NULL, type = "source")
+# library(tmcn)
+
+# install.packages("devtools")
+# devtools::install_github("qinwf/ropencc") # Convert S to Trad
+
+```
+
+
+# Loading data
+```{r}
+# load("data/speech_data.RData")
+# 
+# names(data_list) <- iconv(names(data_list), from="BIG5", to="UTF8")
+# data_list$標題 <- iconv(data_list$標題, from="BIG5", to="UTF8")
+# data_list <- data_list[-c(1,27),]
+# # data_list$content <- iconv(data_list$content, from="BIG5", to="UTF8")
+# data_list$content <- toTrad(data_list$content)
+# docs$word <- NULL
+# 
+# saveRDS(docs, "data/toChinaSpeech.rds")
+# names(docs) <- c("title", "date", "link", "content", "word")
+docs <- readRDS("data/toChinaSpeech.rds")
+# data_list$word <- iconv(data_list$word, from="BIG5", to="UTF8")
+
+# data_list$word <- sapply(data_list$word, function(x){iconv(x, from="BIG5", to="UTF8")})
+
+```
+
+
+
+# Word segmentation
+
+```{r using jiebaR}
+library(jiebaR)
+cutter <- worker()
+segment_not <- c("蔡英文", "南向政策", "副總統")
+new_user_word(cutter, segment_not)
+
+docs <- docs %>%
+	mutate(content = stringr::str_replace_all(content, "台灣", "臺灣")) %>%
+	select(-link)
+docs$words <- sapply(docs$content, function(x){tryCatch({cutter[x]}, error=function(err){})})
+
+```
+
+# Loading stopWords
+
+```{r}
+stopWords <- readRDS("data/stopWords.rds") %>% 
+    .$word %>% unlist() %>% as.character()
+```
+
+```
+fin <- file("data/stopwords_tw.txt",open="r")
+stopWords <- readLines(fin, encoding="UTF-8")
+stopWords <- unique(stopWords)
+added <- c("ㄟ")
+reserved <- c("我們")
+stopWords <- setdiff(stopWords, reserved)
+stopWords <- union(stopWords, added) 
+```
+
+# Tokenization
+
+```{r}
+library(tidyr) # for unnest()
+library(stringr)
+doc_term_count <- docs %>%
+	select(title, words) %>%
+	unnest(words) %>%
+	filter(!is.na(words)) %>%
+	count(title, words) %>%
+	ungroup() %>%
+	filter(!str_detect(words, "[a-zA-Z0-9]+")) %>%
+	filter(!(words %in% stopWords))
+```
+
+
+# Building DocumentTermMatrix
+* `tidytext` 套件可以用來將`data.frame`轉成多種資料檢索或自然語言處理會用到的矩陣，例如`DocumentTermMatrix`、`TermDocumentMatrix`、或者`dgCMatrix`等等。這邊用來將`doc_term_count`
+
+```{r tdm}
+library(tidytext)
+dtm <- cast_dtm(doc_term_count, title, words, n)
+
+```
+
+
+# LDA
+
+```{r}
+library(topicmodels)
+dtm_lda <- LDA(dtm, k = 16, control = list(seed = 1234))
+dtm_lda4 <- LDA(dtm, k = 4, control = list(seed = 1234))
+```
+
+# Word-topic probabilities
+
+```{r}
+library(ggplot2)
+dtm_topics <- tidy(dtm_lda, matrix = "beta")
+
+top_terms <- dtm_topics %>%
+	group_by(topic) %>%
+	top_n(10, beta) %>%
+	ungroup() %>%
+	arrange(topic, -beta)
+
+# View(top_terms)
+
+top_terms %>%
+	mutate(term = reorder(term, beta)) %>%
+	ggplot(aes(term, beta, fill = factor(topic))) +
+	geom_col(show.legend = FALSE) +
+	facet_wrap(~ topic, scales = "free") +
+	coord_flip() +
+	theme(axis.text.y=element_text(colour="black", family="Heiti TC Light"))
+```
+
+## Comparing k=4
+
+```{r}
+dtm_topics_4 <- tidy(dtm_lda4)
+
+top_terms_4 <- dtm_topics_4 %>%
+	group_by(topic) %>%
+	top_n(10, beta) %>%
+	ungroup() %>%
+	arrange(topic, -beta)
+# View(top_terms_4)
+
+top_terms_4 %>%
+	mutate(term = reorder(term, beta)) %>%
+	ggplot(aes(term, beta, fill = factor(topic))) +
+	geom_col(show.legend = FALSE) +
+	facet_wrap(~ topic, scales = "free") +
+	coord_flip() +
+	theme(axis.text.y=element_text(colour="black", family="Heiti TC Light"))
+
+```
+
+
+## Evaluation
+
+```{r}
+perplexity(dtm_lda)
+perplexity(dtm_lda4)
+# [1] 348.7432
+# [1] 592.8917
+
+
+# Example of entroty 
+-(0.6*log2(0.6) + 0.4*log2(0.4))
+-(0.9*log2(0.9) + 0.1*log2(0.1))
+# [1] 0.9709506
+# [1] 0.4689956
+```
+
+```
+library(tidyverse)
+n_topics <- c(2, 4, 8, 12, 16, 20, 24)
+
+perplex <- sapply(n_topics, function(k){
+	lda.temp <- LDA(dtm, k =k, control = list(seed = 1109))
+	perplexity(lda.temp)
+})
+
+
+data_frame(k=n_topics, perplex=perplex) %>%
+	ggplot(aes(k, perplex)) +
+	geom_point() +
+	geom_line() +
+	labs(title = "Evaluating LDA topic models",
+		 subtitle = "Optimal number of topics (smaller is better)",
+		 x = "Number of topics",
+		 y = "Perplexity")
+
+
+# n_topics <- c(2, 4, 8, 14, 16, 18, 32, 64)
+# dtm_lda_compare <- n_topics %>%
+# 	purrr::map(LDA, x = dtm, control = list(seed = 1109))
+# 
+# 
+# data_frame(k = n_topics,
+# 		   perplex = purrr::map_dbl(dtm_lda_compare, perplexity)) %>%
+# 	ggplot(aes(k, perplex)) +
+# 	geom_point() +
+# 	geom_line() +
+# 	labs(title = "Evaluating LDA topic models",
+# 		 subtitle = "Optimal number of topics (smaller is better)",
+# 		 x = "Number of topics",
+		 # y = "Perplexity")
+```
+
+
+
+## Comparing topic1 and topic 2
+
+```{r}
+library(tidyr)
+
+beta_spread <- dtm_topics %>%
+	mutate(topic = paste0("topic", topic)) %>%
+	spread(topic, beta) %>%
+	select(term, topic1, topic2) %>%
+	filter(topic1 > .001 | topic2 > .001) %>%
+	mutate(logratio = log2(topic1 / topic2)) %>%
+	arrange(desc(logratio))
+
+beta_spread
+
+beta_spread %>%
+	group_by(logratio > 0) %>%
+	top_n(20, abs(logratio)) %>%
+	ungroup() %>%
+	mutate(term = reorder(term, logratio)) %>%
+	ggplot(aes(term, logratio, fill = logratio < 0)) +
+	geom_col() +
+	coord_flip() +
+	ylab("Topic2/Topic1 log ratio") +
+	scale_fill_manual(name = "", labels = c("topic2", "topic1"),
+					  values = c("red", "lightblue")) + 
+	theme(axis.text.y=element_text(colour="black", family="Heiti TC Light"))
+
+```
+
+# Document-topic probabilities
+```{r}
+doc_topics <- tidy(dtm_lda, matrix = "gamma") %>%
+	spread(topic, gamma)
+doc_topics
+```
+
+```{r}
+tidy(dtm) %>%
+	filter(document == "總統出席「2017大陸臺商春節聯誼活動」") %>%
+	arrange(desc(count))
+```
+
+
+
+# Building term networks
+```{r}
+
+terms <- terms(dtm_lda, 10) # get 10 terms from each topics
+# class(terms)
+terms.df = as.data.frame(terms, stringsAsFactors = F)
+# terms.df[,1]
+
+# get 2-gram relationship from each topic's words
+# embed(tfs[,1], 2)[,2:1]
+# adjacent_list[[1]]
+
+adjacent_list = lapply(1:16, function(i){as.data.frame(embed(terms.df[,i], 2)[, 2:1])})
+edgelist = bind_rows(adjacent_list)
+
+library(igraph)
+g <-graph.data.frame(edgelist,directed=T )
+l<-layout.fruchterman.reingold(g)
+# nodesize = log(centralization.degree(g)$res)
+V(g)$size = sqrt( centralization.degree(g)$res )
+nodeLabel = V(g)$name
+E(g)$color =  unlist(lapply(sample(colors()[26:137], 16), function(i) rep(i, 9)))
+plot(g, vertex.label= nodeLabel,  edge.curved=TRUE,
+	 vertex.label.cex = 1,  edge.arrow.size=0.1, layout=l,
+	 vertex.label.family='Heiti TC Light',)
+```
+
+# LDAVis
+* https://ldavis.cpsievert.me/reviews/reviews.html
+* https://github.com/m-clark/topic-models-demo/blob/master/topic-model-demo.Rmd
+
+* https://gist.github.com/christophergandrud/00e7451c16439421b24a
+* http://christophergandrud.blogspot.tw/2015/05/a-link-between-topicmodels-lda-and.html
+
+```{r}
+# install.packages("LDAvis")
+library(LDAvis)
+
+m <- cast_sparse(doc_term_count, title, words, n)
+# dim(m)
+# class(m)
+
+
+nword_per_doc <- doc_term_count %>%
+    group_by(title) %>%
+    summarize(total = sum(n)) %>%
+    ungroup() %>% .$total %>% unlist()
+
+??createJSON
+# temp_frequency <- inspect(dtm)
+# freq_matrix <- data.frame(ST = colnames(temp_frequency),
+#                           Freq = colSums(temp_frequency))
+# colSums(dtm)
+
+shinyJSON = createJSON(
+    phi = exp(dtm_lda@beta), 
+    theta = dtm_lda@gamma, 
+    doc.length = nword_per_doc,
+    vocab = dtm_lda@terms,
+    term.frequency = colSums(as.matrix(m)))
+serVis(shinyJSON)
+
+```
+
+## The 2nd solution
+* convert an lda result to json for ldavis
+```
+topicmodels_json_ldavis <- function(fitted, corpus, doc_term){
+
+    # Find required quantities
+    phi <- posterior(fitted)$terms %>% as.matrix
+    theta <- posterior(fitted)$topics %>% as.matrix
+    vocab <- colnames(phi)
+    doc_length <- vector()
+    for (i in 1:length(corpus)) {
+        temp <- paste(corpus[[i]]$content, collapse = ' ')
+        doc_length <- c(doc_length, stri_count(temp, regex = '\\S+'))
+    }
+    temp_frequency <- inspect(doc_term)
+    freq_matrix <- data.frame(ST = colnames(temp_frequency),
+                              Freq = colSums(temp_frequency))
+    rm(temp_frequency)
+
+    # Convert to json
+    json_lda <- LDAvis::createJSON(phi = phi, theta = theta,
+                            vocab = vocab,
+                            doc.length = doc_length,
+                            term.frequency = freq_matrix$Freq)
+
+    return(json_lda)
+}
+```
+
+
+
+# Evaluating topic number
+
+```{r}
+# install.packages("ldatuning")
+library(ldatuning)
+
+=======
+
+# Evaluating topic number
+```{r}
+>>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
+control_list_gibbs <- list(
+	burnin = 2500,
+	iter = 5000,
+	seed = 0:4,
+	nstart = 5,
+	best = TRUE
+)
+<<<<<<< HEAD
+
+
+=======
+# install.packages("ldatuning")
+library(ldatuning)
+>>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
+
+system.time(
+	topic_number_lemma <- FindTopicsNumber(
+		dtm,
+		topics = n_topics,
+		metrics = c( "Griffiths2004", "CaoJuan2009", "Arun2010", "Deeaud2014"),
+		method = "Gibbs",
+		control = control_list_gibbs,
+		mc.cores = 4L,
+		verbose = TRUE
+	)
+)
+# fit models... done.
+# calculate metrics:
+#   Griffiths2004... done.
+#   CaoJuan2009... done.
+#   Arun2010... done.
+#   Deveaud2014... done.
+#    user  system elapsed 
+#   2.138   0.459 366.005 
+ldatuning::FindTopicsNumber_plot(topic_number_lemma)
+```
+
+
+## Evaluting n_topics by max gamma value of topics in each document
+```{r}
+
+
+
+lda.list <- lapply(n_topics, function(k){
+	lda.temp <- LDA(dtm, k = k, method="Gibbs", control = list(seed = 1109))
+	tidy.temp <- tidy(lda.temp, matrix="gamma")
+	tidy.temp$k <- k
+	tidy.temp
+})
+lda.df <- do.call(rbind, lda.list)
+
+lda.df %>%
+	group_by(k, document) %>%
+	arrange(desc(gamma)) %>%
+	slice(1) %>%
+	ungroup() %>% 
+	ggplot(aes(x=gamma, fill=factor(k))) +
+	geom_histogram(bins = 20) +
+	scale_fill_discrete(name = "Number of\nTopics") + 
+	xlab("maximum gamma per document") +
+	facet_wrap(~k) 
+```
+
+
+<<<<<<< HEAD
+
+
+# Correlated Topic Modeling
+* topic modeling比較適合類似新聞的文章，長度夠長，一篇文章內有多個主題，比較不適合類似社群資料等短文。而CTM（Correlated Topic Modeling）則是設計用來處理短文的主題分析。
+=======
+# Correlated Topic Modeling
+>>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
+
+```{r}
+ctm.list <- lapply(n_topics, function(k){
+	ctm.temp <- CTM(x=dtm, k =k, control=control_list_ctm)
+	res=list(ctm=ctm.temp, k=k)
+})
+# lda.df <- do.call(rbind, lda.list)
+
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> cc5078cb44f160d5de0cd078587d1a5d24e3fd98
+```
+
+
+# Acknowledgement
+
+* This page is derived in part from “[Tidy Text Mining with R](https://www.tidytextmining.com/)” and licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License.
+* This page is derived in part from “[What is a good explanation of Latent Dirichlet Allocation?](https://www.quora.com/What-is-a-good-explanation-of-Latent-Dirichlet-Allocation)”
+* This page is dervied in part from the course "[Computing for Social Science](http://cfss.uchicago.edu/fall2016/syllabus.html)" in uChicago. 
+* https://chengjunwang.com/zh/post/cn/cn_archive/2013-09-27-topic-modeling-of-song-peom/
+* http://www.bernhardlearns.com/2017/05/topic-models-lda-and-ctm-in-r-with.html
+
