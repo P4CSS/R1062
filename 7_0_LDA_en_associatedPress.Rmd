@@ -1,0 +1,307 @@
+---
+title: "Topic modeling on DCard Forum"
+author: "Ji-Lung Hsieh"
+output:
+  html_notebook:
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    fig_width: 6
+    fig_height: 3
+    fig_caption: true
+    theme: united
+    highlight: tango
+---
+
+# Basic cases
+
+## Importing library
+```{r}
+library(dplyr)
+library(tidytext)
+library(stringr)
+library(ggplot2)
+library(topicmodels)
+```
+
+
+## Loading data
+* `AssociatedPress` is a Document-Term Matrix
+
+```{r}
+library(topicmodels)
+data("AssociatedPress") # topicmodels::AssociatedPress
+AssociatedPress
+dim(AssociatedPress)
+```
+
+
+## Building LDA model
+
+```{r}
+ap_lda <- LDA(AssociatedPress, k = 2, control = list(seed = 1234))
+```
+
+
+## Convert back to tidy form
+* Chapter 5 of the book introduced the `tidy()` method, originally from the `broom` package (Robinson 2017), for tidying model objects. The `tidytext` package provides this method for extracting the per-topic-per-word probabilities, called  ββ  (“beta”), from the model.
+
+```{r}
+ap_topics <- tidytext::tidy(ap_lda, matrix = "beta")
+```
+
+## Visualization
+```{r}
+ap_top_terms <- ap_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+ap_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+## Comparing topic 1 and 2
+```{r}
+library(tidyr)
+
+beta_spread <- ap_topics %>%
+  mutate(topic = paste0("topic", topic)) %>%
+  spread(topic, beta) %>%
+  filter(topic1 > .001 | topic2 > .001) %>%
+  mutate(log_ratio = log2(topic2 / topic1))
+
+beta_spread %>%
+  group_by(direction = log_ratio > 0) %>%
+  top_n(10, abs(log_ratio)) %>%
+  ungroup() %>%
+  mutate(term = reorder(term, log_ratio)) %>%
+  ggplot(aes(term, log_ratio)) +
+  geom_col() +
+  labs(y = "Log2 ratio of beta in topic 2 / topic 1") +
+  coord_flip()
+```
+
+## Topic probability of Documents
+
+```{r}
+ap_documents <- tidy(ap_lda, matrix = "gamma")
+ap_documents
+```
+
+## Sorting word of Documents
+```{r}
+tidy(AssociatedPress) %>%
+  filter(document == 6) %>%
+  arrange(desc(count))
+```
+
+
+# The example from the book
+
+
+# Trump's tweets
+```{r}
+library(jsonlite)
+tweets <- fromJSON("data/condensed_2017.json")
+text_df <- data_frame(post=1:nrow(tweets), text=tweets$text)
+
+data(stop_words)
+
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
+text_token <- text_df %>%
+	filter(!str_detect(text, '^"')) %>%
+	mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+	unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+	# unnest_tokens(word, text) %>%
+	anti_join(stop_words) %>%
+	filter(str_detect(word, "[a-z]"))
+
+dtm <- text_token %>%
+	count(post, word) %>%
+	cast_dtm(post, word, n)
+
+dtm_lda <- LDA(dtm, k = 10, control = list(seed = 1234))
+
+dtm_topics <- tidy(dtm_lda, matrix = "beta")
+
+top_terms <- dtm_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+top_terms %>%
+	mutate(term = reorder(term, beta)) %>%
+	ggplot(aes(term, beta, fill = factor(topic))) +
+	geom_col(show.legend = FALSE) +
+	facet_wrap(~ topic, scales = "free") +
+	coord_flip()
+```
+
+
+# The New York Times
+```{r}
+library(RTextTools)
+library(tm)
+
+data(NYTimes)
+data <- NYTimes[sample(1:3100, size=1000, replace=FALSE),]
+```
+
+## Creating matrix
+```{r}
+matrix <- create_matrix(cbind(as.vector(data$Title),
+            as.vector(data$Subject)), 
+            language="english", 
+            removeNumbers=TRUE, 
+            stemWords=TRUE, 
+            weighting=tm::weightTf)
+```
+
+## Modeling
+
+```{r}
+k <- length(unique(data$Topic.Code))
+lda <- LDA(matrix, k)
+terms(lda)
+topics(lda)
+```
+
+
+
+# Dcard
+# Loading data
+
+```{r}
+
+post.df <- readRDS("data/dcard_relationship.rds")
+dim(post.df)
+
+stopWords <- readRDS("data/stopWords.rds")
+```
+
+# doc filter
+
+```{r}
+
+doc_in <- "劈腿" # for observing target
+doc_in.v <- unlist(str_split(doc_in, "\\|"))
+doc_out <- "" # for filtering irrelevant posts
+doc_out.v <- unlist(str_split(doc_out, "\\|"))
+
+post.df <- post.df %>%
+	filter(str_detect(excerpt, doc_in))
+```
+
+## Calculating each document's topic composition
+
+```{r}
+ap_documents <- tidy(ap_lda, matrix = "gamma")
+ap_documents
+
+tidy(AssociatedPress) %>%
+  filter(document == 6) %>%
+  arrange(desc(count))
+```
+
+
+
+## Tokenized by jieba
+
+```{r}
+library(jiebaR)
+cutter = worker()
+segment_not <- c("前男友","前女友", "女生朋友", "男生朋友", "無接縫", "接軌", "女朋友", "男朋友", "在一起", "劈腿", "渣男", "筋夠軟", "很久", "又要到了", "也要到了", "走不到", "原po", "約炮", "好幾次", "好兄弟", "蠻扯", "以為", "抓包", "陪我")
+new_user_word(cutter, c(segment_not, doc_in.v))
+
+```
+
+
+### cutter and tidyr::unnest()
+
+```{r}
+ptm <- proc.time() #95 secs
+post.df$word <- sapply(post.df$excerpt, 
+						  function(x){tryCatch({cutter[x]}, 
+						  					 error=function(err){})})
+print(proc.time()-ptm)
+
+library(tidyr)
+post.u <- unnest(post.df, word)
+
+```
+
+
+
+# Filtering by terms
+```{r}
+exclude <- c("妳", "我們", "說", "人", "一個", "問")
+include <- c("母豬", "破麻", "婊子")
+include <- c("前男友")
+
+post.u  %<>% 
+	filter(!word %in% stopWords) %>% 
+	filter(!word %in% exclude) %>%
+	filter(!word %in% doc_in.v) %>%
+	# %>% filter(word %in% include)
+	filter(!str_detect(word, "[a-zA-Z0-9]+")) %>%
+	filter(nchar(word) > 1)
+	
+
+```
+
+
+# (Deprecated)Counting frequency of words
+```{r}
+post_word_freq <- text_token %>%
+	count(post, word, sort=T)
+post_words <- post_word_freq %>%
+	bind_tf_idf(word, post, n)
+```
+
+
+
+# LDA
+```{r}
+
+# Building dtm
+dcard_tdm <- post.u %>%
+	count(id, word) %>%
+	cast_dtm(id, word, n)
+# dcard_tdm
+
+# LDA
+dcard_lda <- LDA(dcard_tdm, k = 5, control = list(seed = 1234))
+
+# convert to tidy form for visualization
+dcard_topics <- tidy(dcard_lda, matrix = "beta")
+
+```
+
+# Visualization
+```{r}
+
+dcard_top_terms <- dcard_topics %>%
+  group_by(topic) %>%
+  top_n(15, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+# font names https://d.cosx.org/d/101521-101521
+dcard_top_terms %>%
+	mutate(term = reorder(term, beta)) %>%
+	ggplot(aes(term, beta, fill = factor(topic))) +
+	geom_col(show.legend = FALSE) +
+	theme(text=element_text(family="STKaiti")) + 
+	facet_wrap(~ topic, scales = "free") +
+	coord_flip()
+```
+
