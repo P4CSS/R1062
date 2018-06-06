@@ -11,9 +11,21 @@
 Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
 Sys.setlocale(category = "LC_ALL", locale = "C") 
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
-```
-### W14-Word2Vec
+
+## W18 - final report
+
+
+### W17 - Dimension reduction and document classification
+
+### W16-SVM to predict stock up and down
+* [Slide09: SVM](https://docs.google.com/presentation/d/e/2PACX-1vRVudHBYlfrtXZDu7zIdbde3_dB3gIXrl6S0lMSARfRfA__m0TPL-AmQvVMdEIE6BqU6dLgQWJ-QYwP/pub?start=false&loop=false&delayms=3000)
+
+### W15 Word2vec
 * [Slide08: word2vec](https://docs.google.com/presentation/d/e/2PACX-1vSaDbagemtALMf0F5CJViNvLUI7U7cGJtelziV5IdKOridKI28DQ85sWWpVa1Y_1G3vH0bkKMAzW-XZ/pub?start=false&loop=false&delayms=3000)
+
+
+### W14-report
+* Pre-report and review of topic modeling
 
 ### W13-Topic modeling
 * [Slide07. Processing Chinese text and topic modeling](https://docs.google.com/presentation/d/e/2PACX-1vRTSSO_8JuLTK_1OyM9eDrogA-K2fhXQwlKxh1PpRvNavkurCCcKBNftv9MpKGYM6EDXtNnqZvPDdKy/pub?start=false&loop=false&delayms=3000)
