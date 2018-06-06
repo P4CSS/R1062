@@ -11,6 +11,7 @@
 Sys.setlocale(category = "LC_ALL", locale = "UTF-8")
 Sys.setlocale(category = "LC_ALL", locale = "C") 
 Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
+```
 
 ## W18 - final report
 
