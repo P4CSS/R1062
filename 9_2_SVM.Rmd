@@ -1,0 +1,252 @@
+---
+title: "SVM & Stock Price Prediction"
+author: "ZHAODONG WANG"
+date: "2018-01-05"
+output: html_document
+---
+
+
+## 0. Install Packages
+
+
+```{r}
+
+pkgs <- c("jiebaR", "tidyverse", "stringr", "e1071", "tidyr", "Rtsne")
+pkgs <- pkgs[!pkgs %in% installed.packages()[,"Package"]]
+if(length(pkgs)) { install.packages(pkgs)}
+library(tidyverse)
+library(stringr)
+options(stringsAsFactors = F)
+```
+
+# Loading data
+```{r}
+load("data/stock_news.RData")
+stock_news %>% names
+```
+
+
+```{r jeibaR and stop word}
+library(jiebaR)
+segment_not <- c("鴻海" ,  "永豐金", "中信金", "台積電", "聯發科" ,"兆豐金", "台指期","郭台銘","張忠謀","鉅亨網")
+cutter <- worker()
+new_user_word(cutter,segment_not)
+stopWords <- readRDS("data/stopWords.rds")
+```
+
+
+
+
+# Stopwords
+
+
+```{r}
+
+unnested.df <- stock_news %>%
+    select(doc_id = newsId, text = content, status = status_p) %>%
+    mutate(word = purrr::map(text, function(x)segment(x, cutter))) %>%
+    unnest(word) %>%
+    filter(!is.na(word)) %>% 
+    filter(!word %in% stopWords$word) %>% 
+    filter(!str_detect(word, "[a-zA-Z0-9]+")) %>% 
+    filter(nchar(word) > 1) 
+```
+
+
+# 2. Word-Combination
+* `combn()`
+* `lead()`
+* `expand.grid()`
+* `embed()`
+
+```{r testing combn, eval=FALSE, include=FALSE}
+# demo <- c(1, 2, 3, 4, 5)
+# expand.grid(demo, demo)
+# embed(demo, 2)[,2:1]
+```
+
+# 3. Generate word-combination
+
+```{r}
+# combination.pre <- segment_words %>%
+#   group_by(newsId, status_p) %>%
+#   summarize(words.str=paste(words1, collapse = ", ")) %>%
+#   ungroup() %>%
+#   mutate(words.filtered=str_split(words.str, ", "))
+# 
+# combination.list <- list()
+# 
+# 
+# 
+# 
+# for(r in 1:nrow(combination.pre)){
+#   select <- unlist(combination.pre[r, ]$words.filtered)
+#   if(length(select)<=5){
+#     print(select)
+#     next
+#   }
+#   
+#   windowise_5 <- embed(select, 5)[, 5:1]
+#   
+#   if(nrow(windowise_5)<1){
+#     next
+#   }else{
+#     # by real combination -----------------
+#     # edges.list <- lapply(1:nrow(windowise_5), function(i){
+#     #   as.data.frame(t(combn(unlist(windowise_5[i,]), 2)))
+#     # })
+#     # by window 5 2-gram -----------------
+#     edges.list <- lapply(1:nrow(windowise_5), function(i){
+#       row <- unlist(windowise_5[i,])
+#       data.frame(V1=row[1], V2=row[2:5])
+#     })
+#     
+#     
+#     edges <- edges.list %>%
+#       bind_rows() %>%
+#       mutate(newsId=combination.pre[r, ]$newsId,
+#              status=combination.pre[r, ]$status_p)
+#   }  
+#   combination.list[[r]] <- edges
+#   if(r %% 10==0) cat(sprintf("%4d", r))
+# }
+# # combination <- do.call(bind_rows, combination.list)
+# combination <- bind_rows(combination.list)
+```
+
+
+```{r}
+five.gram <- unnested.df %>%
+  # filter(!word %in% c())) %>%
+  select(w1 = word, everything()) %>%
+  group_by(doc_id) %>%
+  mutate(w2 = lead(w1, 1)) %>%
+  mutate(w3 = lead(w1, 2)) %>%
+  mutate(w4 = lead(w1, 3)) %>%
+  mutate(w5 = lead(w1, 4)) %>%
+  ungroup() %>%
+  filter(complete.cases(.)) %>%
+  mutate(w12 = paste0(w1, " ", w2)) %>%
+  mutate(w13 = paste0(w1, " ", w3)) %>%
+  mutate(w14 = paste0(w1, " ", w4)) %>%
+  mutate(w15 = paste0(w1, " ", w5))
+
+bigrams <- five.gram %>%
+    select(doc_id, w12, w13, w14, w15) %>%
+    gather("pair", "bigram", 2:5) %>%
+    select(doc_id, bigram) %>%
+    separate(bigram, c("V1", "V2"), sep = " ") %>%
+    left_join(stock_news %>% select(doc_id = newsId, status = status_p))
+```
+
+
+
+
+
+# 4. Chi-square feature selection
+* `load("chi_df.rds")` for obtaining result directly.
+
+```{r}
+# count.df <- bigrams %>%
+#   mutate(w_c = paste(V1, V2, sep=" ")) %>%
+#   count(w_c, status)
+
+chi_df <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  count(w_c, status) %>% # word_combination
+  filter(n > 3) %>%
+  spread(status, n, fill=0) %>%
+  rename(A=`1`, C=`0`) %>%
+  # filter(!w_c=="NA NA") %>%
+  mutate(B=sum(A)-A,
+         D=sum(C)-C,
+         N=A+B+C+D, 
+         chi2 = (A*D - B*C)^2 * N / ((A+C)*(A+B)*(B+D)*(C+D))) %>%
+  filter(chi2 > 6.64)
+
+```
+
+
+
+
+
+# 5. TF-IDF（term frequency & inverse document frequency）
+
+```{r}
+library(tidytext)
+# dtm <- cast_dtm(word_token, title, words, n)
+# ??cast_dtm
+
+comb.df <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  left_join(chi_df) %>%
+  filter(!is.na(chi2)) %>%
+  count(doc_id, w_c) %>%
+  bind_tf_idf(w_c, doc_id, n) %>%
+  select(doc_id, w_c, tf_idf) %>%
+  spread(w_c, tf_idf, fill=0) %>%
+  left_join(select(stock_news, doc_id = newsId, status = status_p))
+```
+
+
+
+
+# 6. T-SNE
+
+
+```{r}
+
+library(Rtsne)
+
+
+# Hsieh's version
+feature <- comb.df[-c(1, ncol(comb.df))]
+label <- comb.df$status
+
+# tsne to reduce dim to 2
+tsne <- Rtsne(feature, perplexity = 35, dims = 2, check_duplicates = F)
+
+# 取出降維後的特徵值df
+feature_tsne <- as.data.frame(tsne$Y)
+
+feature_tsne$labels <- as.factor(label)
+
+# save(feature_tsne, file = "feature_tsne.rds")
+
+```
+
+
+# 7. SVM （support vector machine）
+
+```{r}
+
+# 隨機構建訓練集與測試集
+# 60%資料為訓練集，其餘為測試集
+set.seed(2018)
+
+samples <- sample(1:nrow(feature_tsne), 
+                  size = round(nrow(feature_tsne)*0.6))
+
+trainset <- feature_tsne %>% slice(samples)
+testset <- feature_tsne[-samples,]
+
+
+
+library(e1071)
+
+# 建立 SVM 分類器model，機器學習主體函式
+# labels~ 表示除去labels的資料，其他數據均進入機器學習中。 labels之資料作為分類標的。
+# kernel 表示svm之核函式，此次選用Radial
+model <- svm(labels~ ., data = trainset, kernel="radial")
+
+# 預測函式主體
+predicting  <- predict(model, testset[, -ncol(testset)])
+
+# 對比統計預測與實際之差
+table(predicting, testset$labels)
+
+# 計算預測準確率
+pre <- predicting == testset$labels
+percent1 <- length(pre[pre == T]) / length(pre)
+percent1
+```
