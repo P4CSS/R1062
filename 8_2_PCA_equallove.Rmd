@@ -1,0 +1,505 @@
+---
+title: "9_1_PCA_equallove"
+author: "Ji-Lung Hsieh"
+output:
+  html_notebook:
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    theme: united
+    highlight: tango
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Loading
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(igraph)
+```
+
+```{r}
+# posts <- readRDS("../_fbAnalysis/data/posts_equallovetw_20171113165540")
+# reactions <- readRDS("../_fbAnalysis/data/post_reactions_equallovetw_20171113170716")
+library(lubridate)
+load("../_fb/fbdata/CitizensMiaokou_1211.rda")
+dim(posts)
+dim(reactions)
+dim(comments)
+```
+
+```{r}
+plot(density(posts$likes_count))
+plot(density(year(posts$created_time)))
+```
+
+
+
+```{r}
+# sort(posts$likes_count, decreasing = T)
+# posts <- posts %>%
+# 	filter(likes_count < 10000) %>%
+# 	filter(!is.na(caption))
+
+post2017 <- posts %>%
+	filter(created_time >= as.POSIXct("2017-01-01"))
+
+post2015 <- posts %>%
+	filter(created_time >= as.POSIXct("2015-01-01") &
+		   	created_time < as.POSIXct("2016-01-01"))
+```
+
+
+
+
+## Filtering data
+
+```{r}
+
+unique(reactions$type)
+# [1] "LIKE"     "HAHA"     "ANGRY"    "WOW"      "SAD"      "LOVE"     "PRIDE"   
+# [8] "THANKFUL"
+
+reaction2017 <- reactions %>%
+	filter(type %in% c("LIKE", "LOVE", "PRIDE")) %>%
+	filter(pid %in% post2017$id)
+
+reaction2015 <- reactions %>%
+	filter(type %in% c("LIKE", "LOVE", "PRIDE")) %>%
+	filter(pid %in% post2015$id)
+
+
+high_user2017 <- reaction2017 %>%
+	count(id) %>%
+	filter(n >= 5)
+
+high_user2015 <- reaction2015 %>%
+	count(id) %>%
+	filter(n >= 5)
+
+
+like_pid2017 <-  reaction2017 %>%
+	count(id, pid) %>%
+	filter(id %in% high_user2017$id) %>%
+	select(-n)
+
+like_pid2015 <-  reaction2015%>%
+	count(id, pid) %>%
+	filter(id %in% high_user2015$id) %>%
+	select(-n)
+```
+
+# (deprecated)Building co-occurrence matrix
+```
+like2pid2017 <-  reaction2017%>%
+	count(id, pid) %>%
+	filter(id %in% high_user2017$id) %>%
+	spread(pid, n, fill=0)
+
+like2pid2015 <-  reaction2015%>%
+	count(id, pid) %>%
+	filter(id %in% high_user2015$id) %>%
+	spread(pid, n, fill=0)
+
+dim(like2pid2017)
+dim(like2pid2015)
+
+
+like_pid2017 <- like2pid2017 %>%
+  gather(page, n, -id) %>%
+  filter(n>0) %>%
+  select(-n)
+
+like_pid2015 <- like2pid2015 %>%
+  gather(page, n, -id) %>%
+  filter(n>0) %>%
+  select(-n)
+```
+
+## Working with bipartie/affiliation network data in R
+* Soloman messing's page https://solomonmessing.wordpress.com/2012/09/30/working-with-bipartiteaffiliation-network-data-in-r/
+
+```{r}
+library(Matrix)
+
+toAffMatrix <- function(like_pid){
+	A <- spMatrix(nrow=length(unique(like_pid$id)),
+				  ncol=length(unique(like_pid$pid)),
+				  i = as.numeric(factor(like_pid$id)),
+				  j = as.numeric(factor(like_pid$pid)),
+				  x = rep(1, length(as.numeric(like_pid$id))) )
+	row.names(A) <- levels(factor(like_pid$id))
+	colnames(A) <- levels(factor(like_pid$pid))
+	Acol <- tcrossprod(t(A))
+	Matrix(Acol)	
+}
+
+m2017 <- toAffMatrix(like_pid2017) # pid to pid matrix
+m2015 <- toAffMatrix(like_pid2015)
+message(dim(m2015), "\t",
+		length(unique(like_pid2015$pid)), "\t",
+		dim(m2017), "\t",
+		length(unique(like_pid2017$pid))
+		)
+```
+
+```{r}
+m2017_1 <- m2017/apply(m2017, 1, max)
+m2015_1 <- m2015/apply(m2015, 1, max)
+m2017.pca <- prcomp(m2017_1,
+                 center = TRUE,
+                 scale. = TRUE)
+m2015.pca <- prcomp(m2015_1,
+                 center = TRUE,
+                 scale. = TRUE)
+
+
+# print(m2017.pca)
+plot(m2017.pca, type = "l")
+# print(m2015.pca)
+plot(m2015.pca, type = "l")
+```
+
+
+```{r}
+m2017.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1)) + geom_density()
+
+m2017.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC2)) + geom_density()
+
+m2017.pca$x %>% # data projected in pca space
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_jitter()
+
+m2017.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_density2d()
+```
+
+```{r}
+m2015.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1)) + geom_density()
+
+
+m2015.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC2)) + geom_histogram()
+
+m2015.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC2)) + geom_density()
+
+m2015.pca$x %>% # data projected in pca space
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_jitter()
+
+m2015.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_density2d()
+
+```
+
+## explore
+```{r}
+df2015.pca <- m2015.pca$x %>%
+	as.data.frame %>%
+	select(PC1, PC2) %>%
+	mutate(id=rownames(.)) %>%
+	left_join(post2015) %>%
+	arrange(desc(PC2)) %>%
+	mutate(hour=hour(created_time)) %>%
+	mutate(week=week(created_time))
+
+
+df2017.pca <- m2017.pca$x %>%
+	as.data.frame %>%
+	select(PC1, PC2) %>%
+	mutate(id=rownames(.)) %>%
+	left_join(post2017) %>%
+	arrange(desc(PC2)) %>%
+	mutate(hour=hour(created_time)) %>%
+	mutate(week=week(created_time))
+
+
+plot(df2015.pca[,c(1, 2, 13:17)])
+plot(df2017.pca[,c(1, 2, 13:17)])
+
+df2015.pca %>%
+	ggplot(aes(PC1, PC2, color=factor(type))) + 
+	geom_point(alpha = 0.5)
+
+df2017.pca %>%
+	ggplot(aes(PC1, PC2, color=factor(type))) + 
+	geom_point(alpha = 0.5)
+
+
+df2015.pca %>%
+	ggplot(aes(PC1, PC2, color=week)) +
+	geom_point()
+
+df2017.pca %>%
+	ggplot(aes(PC1, PC2, color=week)) +
+	geom_point()
+	
+
+```
+
+
+
+
+## conver to user scale
+```{r}
+m2015.pca$x
+like2pid.m <- as.matrix(like2pid2015[,-1])
+PC2.v <- as.data.frame(m2015.pca$x)$PC2
+
+test <- t(t(like2pid.m)*PC2.v)
+test.freq <- apply(test, 1, mean)
+plot(density(test.freq))
+```
+
+```{r}
+ma <- matrix(c(1,0,1,1,0,0,0,0,1), nrow=3, ncol=3)
+ma
+va <- matrix(c(3,2,1), nrow=1, ncol=3)
+va <- c(3,2,1)
+t(t(ma)*va)
+```
+
+
+## network visualization
+```{r}
+library(igraph)
+dim(as.matrix(m2015))
+g2 <- graph.adjacency(as.matrix(m2015),mode="undirected",weighted=TRUE)
+	# graph_from_adjacency_matrix(m2015, weighted=TRUE, mode = "undirected")
+hist(E(g2)$weight, n=1000, xlim = c(1, 100))
+
+g2s <- simplify(g2, remove.multiple = T, remove.loops = T, edge.attr.comb=c(weight="sum", type="ignore") )
+ecount(g2s)
+test <- which(E(g2s)$weight > 10)
+g2s.copy <- delete.edges(g2s, which(E(g2s)$weight < 10))
+ecount(g2s.copy)
+plot(g2s.copy, 
+	 vertex.label=NA, 
+	 vertex.size=1,
+	 edge.curved=0.2,
+	 layout=layout_with_kk)
+
+```
+
+## MDS
+```{r}
+d <- dist(m2015)
+fit <- cmdscale(d,eig=TRUE, k=2)
+x <- fit$points[,1]
+y <- fit$points[,2]
+plot(x, y)
+```
+
+
+
+# by prcomp
+
+
+```{r}
+like.pca <- prcomp(like2pid[-1], center=TRUE, scale. = TRUE)
+str(like.pca)
+```
+
+```{r}
+plot(like.pca, type = "l")
+library(factoextra)
+fviz_eig(like.pca)
+```
+
+
+* http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/#theory-behind-pca-results
+
+```
+fviz_pca_ind(like.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+```
+
+
+
+```{r}
+library(dplyr)
+like.pca$x %>% # data projected in pca space
+	as.data.frame() %>%
+	ggplot(aes(PC1, PC2)) + geom_point()
+
+```
+
+```{r}
+fviz_pca_ind(like.pca,
+			 axes = c(1, 2),
+			 geom = c("point"),
+			 alpha.var = 0.5
+             )
+```
+
+```{r}
+like.pca$x %>% # data projected in pca space
+	as.data.frame() %>%
+	ggplot(aes(PC1)) + geom_density()
+```
+
+
+```{r}
+hm <- as.matrix(like2pid[-1])
+test <- drop(scale(hm, center = like.pca$center, scale=like.pca$scale) %*% like.pca$rotation[,1])
+head(test)
+```
+
+```{r}
+plot(density(test))
+```
+
+
+# Using logisticPCA
+* https://cran.r-project.org/web/packages/logisticPCA/vignettes/logisticPCA.html
+```{r}
+library(logisticPCA)
+data("house_votes84")
+head(house_votes84)
+```
+```{r by SVD}
+logsvd_model = logisticSVD(house_votes84, k = 2)
+logsvd_model
+```
+
+
+```{r by cv.lpca}
+logpca_cv = cv.lpca(house_votes84, ks = 2, ms = 1:10)
+plot(logpca_cv)
+```
+```{r}
+logpca_model = logisticPCA(house_votes84, k = 2, m = which.min(logpca_cv))
+clogpca_model = convexLogisticPCA(house_votes84, k = 2, m = which.min(logpca_cv))
+plot(clogpca_model, type = "trace")
+plot(logsvd_model, type = "trace")
+```
+
+
+```{r}
+party = rownames(house_votes84)
+plot(logsvd_model, type = "scores") + geom_point(aes(colour = party)) + 
+  ggtitle("Exponential Family PCA") + scale_colour_manual(values = c("blue", "red"))
+```
+
+```{r}
+plot(logpca_model, type = "scores") + geom_point(aes(colour = party)) + 
+  ggtitle("Logistic PCA") + scale_colour_manual(values = c("blue", "red"))
+```
+
+```{r}
+plot(clogpca_model, type = "scores") + geom_point(aes(colour = party)) + 
+  ggtitle("Convex Logistic PCA") + scale_colour_manual(values = c("blue", "red"))
+```
+
+
+# equallove.tw using logisticPCA
+```{r}
+logsvd_model = logisticSVD(like2pid[-1], k = 2)
+logsvd_model
+```
+
+```{r}
+logpca_cv = cv.lpca(like2pid[-1], ks = 2, ms = 1:10)
+plot(logpca_cv)
+```
+
+```{r}
+logpca_model = logisticPCA(like2pid[-1], k = 2, m = which.min(logpca_cv))
+clogpca_model = convexLogisticPCA(like2pid[-1], k = 2, m = which.min(logpca_cv))
+plot(clogpca_model, type = "trace")
+plot(logsvd_model, type = "trace")
+```
+
+
+# PCA Essentials
+```{r}
+posts <- readRDS("../_fbAnalysis/fbdata/equallove/equallovetw_post.rds")
+```
+
+
+```{r essential codes}
+post_1001 <- posts %>%
+	filter(created_time >= as.POSIXct("2017-10-01"))
+reaction_1001 <- reactions %>%
+	filter(type %in% c("LIKE", "LOVE", "PRIDE")) %>%
+	filter(pid %in% post_1001$id)
+high_user_1001 <- reaction_1001 %>%
+	count(id) %>%
+	filter(n >= 5)
+
+like2pid_1001 <-  reaction_1001%>%
+	count(id, pid) %>%
+	filter(id %in% high_user_1001$id) %>%
+	spread(pid, n, fill=0)
+
+like_pid_1001 <- like2pid_1001 %>%
+  gather(page, n, -id) %>%
+  filter(n>0) %>%
+  select(-n)
+m1001 <- toAffMatrix(like_pid_1001)
+m1001_1 <- m1001/apply(m1001, 1, max)
+m1001.pca <- prcomp(m1001_1,
+                 center = TRUE,
+                 scale. = TRUE)
+plot(m1001.pca, type = "l")
+
+m1001.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1)) + geom_density()
+
+m1001.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC2)) + geom_density()
+
+m1001.pca$x %>% # data projected in pca space
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_jitter()
+
+m1001.pca$x %>%
+  as.data.frame() %>%
+  ggplot(aes(PC1, PC2)) + geom_density2d()
+
+df1001.pca <- m1001.pca$x %>%
+	as.data.frame %>%
+	select(PC1, PC2) %>%
+	mutate(id=rownames(.)) %>%
+	left_join(post_1001) %>%
+	arrange(desc(PC2)) %>%
+	mutate(hour=hour(created_time)) %>%
+	mutate(week=week(created_time))
+
+
+plot(df1001.pca[,c(1, 2, 13:17)])
+
+df1001.pca %>%
+	ggplot(aes(PC1, PC2, color=factor(type))) + 
+	geom_point(alpha = 0.5)
+
+df1001.pca %>%
+	ggplot(aes(PC1, PC2, color=week)) +
+	geom_point()
+
+
+
+```
+
+
+
