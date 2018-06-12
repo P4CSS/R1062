@@ -20,10 +20,12 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 
 ### W16-SVM to predict stock up and down
 * [Slide09: SVM](https://docs.google.com/presentation/d/e/2PACX-1vRVudHBYlfrtXZDu7zIdbde3_dB3gIXrl6S0lMSARfRfA__m0TPL-AmQvVMdEIE6BqU6dLgQWJ-QYwP/pub?start=false&loop=false&delayms=3000)
+* [Slide08-1: PCA](https://docs.google.com/presentation/d/e/2PACX-1vRhbsGGw0xYHisqd9IxqiOJ7iDYic0WjipPEwlI3J8LkaBYokP20oyOlKiGE7lyXBCAhBnBL4harpmV/pub?start=false&loop=false&delayms=3000)
+* [PCA iris]
+* [PCA Marriage Equality]
 
 ### W15 Word2vec
 * [Slide08: word2vec](https://docs.google.com/presentation/d/e/2PACX-1vSaDbagemtALMf0F5CJViNvLUI7U7cGJtelziV5IdKOridKI28DQ85sWWpVa1Y_1G3vH0bkKMAzW-XZ/pub?start=false&loop=false&delayms=3000)
-* [Slide08-1: PCA](https://docs.google.com/presentation/d/e/2PACX-1vRhbsGGw0xYHisqd9IxqiOJ7iDYic0WjipPEwlI3J8LkaBYokP20oyOlKiGE7lyXBCAhBnBL4harpmV/pub?start=false&loop=false&delayms=3000)
 
 
 ### W14-report
