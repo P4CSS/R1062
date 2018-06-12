@@ -1,0 +1,135 @@
+---
+title: "homo1_reactions"
+output: 
+  html_notebook: 
+    number_sections: true
+    fig_caption: yes
+    highlight: zenburn
+    theme: simplex
+    toc: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Chronology
+* 2016-11-08 民法修正草案在國民黨及民進黨均同意下在立法院通過一讀
+* 2016-11-17 排案審查
+* 2017-05-24 大法官釋字第 748 號
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(tidyverse)
+library(magrittr)
+library(stringr)
+watched.date <- c("2016-11-17",
+                  "2016 -11-24", "2016-11-28",
+                  "2017-05-24")
+
+```
+
+
+
+```{r}
+load("data/marriage_equality_m.rda")
+```
+
+
+
+
+#  PCA
+
+```{r}
+
+# love.m <- log1p(love.m)*10
+love.m <- love.m/apply(love.m, 1, max)
+# love.m <- d1_d2_tfidf_cos_sim
+m.pca <- prcomp(love.m,
+					center = TRUE,
+					scale. = TRUE)
+
+plot(m.pca, type = "l")
+```
+
+
+# Plotting results of PCA
+```{r}
+m.pca$x %>%
+	as.data.frame() %>%
+	ggplot(aes(PC1)) + geom_density()
+
+m.pca$x %>%
+	as.data.frame() %>%
+	ggplot(aes(PC2)) + geom_density()
+
+m.pca$x %>% # data projected in pca space
+	as.data.frame() %>%
+	ggplot(aes(PC1, PC2)) + geom_jitter()
+
+m.pca$x %>%
+	as.data.frame() %>%
+	ggplot(aes(PC1, PC2)) + geom_density2d()
+
+```
+
+
+
+## Combine with origial data
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+df2015.pca <- m.pca$x %>%
+	as.data.frame %>%
+	select(PC1, PC2) %>%
+	mutate(id=rownames(.)) %>%
+	left_join(pname.df) %>%
+	arrange(desc(PC2))
+
+df2015.pca %>%
+	ggplot(aes(PC1, PC2)) + geom_jitter() +
+	geom_text(aes(PC1, PC2, label=name), family="Heiti TC Light", hjust = 0, nudge_x = 0.05) # STKaiti
+
+# df2015.pca %>%
+# 	ggplot(aes(PC1, PC2)) + geom_jitter() +
+# 	geom_text(aes(PC1, PC2, label=id), family="黑體-繁 中黑", hjust = 0, nudge_x = 0.05) # STKaiti
+
+```
+
+
+
+
+
+
+
+# MDS
+```{r message=FALSE, warning=FALSE}
+d <- dist(love.m)
+fit <- cmdscale(d,eig=TRUE, k=2)
+
+as.data.frame(fit$points) %>%
+  mutate(id = rownames(.)) %>%
+  left_join(pname.df %>% select(id, name)) %>%
+  ggplot(aes(V1, V2)) + 
+  geom_point() + 
+  geom_text(aes(label = name), hjust = 0, vjust = 0, size = 3, alpha = 0.5, family = "Heiti TC Light")
+# plot(x, y)
+```
+
+
+
+
+```{r}
+library(igraph)
+library(ggraph)
+library(widyr)
+set.seed(2016)
+page_pairs %>%
+  filter(n > 10) %>%
+  left_join(pname.df, by = c("item1" = "id")) %>%
+  left_join(pname.df, by = c("item2" = "id")) %>%
+  select(item1 = name.x, item2 = name.y, n) %>%
+    graph_from_data_frame() %>%
+    ggraph(layout = "fr") +
+    geom_edge_link(aes(edge_alpha = n), show.legend = FALSE) +
+    geom_node_point(color = "lightblue", size = 2) +
+    geom_node_text(aes(label = name), repel = F, family = "Heiti TC Light", size = 2) +
+    theme_void()
+
+```
