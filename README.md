@@ -16,7 +16,9 @@ Sys.setlocale(category = "LC_ALL", locale = "cht") # for win
 ## W18 - final report
 
 
-### W17 - Dimension reduction and document classification
+### W17 - Random Forest 
+* [Slide10: Random Forest](https://docs.google.com/presentation/d/e/2PACX-1vQRPmt4H5Pdys7pu7-SvNu7Y5p08OrINCJx-WFEm5PI2OM5k--pwNUUGjNxmGthpE2c66fzyP9Ms9ve/pub?start=false&loop=false&delayms=3000)
+* Be sure to have `9_3_decision_tree_titanic.Rmd` and `TM08_stock_random_forest.Rmd`
 
 ### W16-SVM to predict stock up and down
 * [Slide09: SVM](https://docs.google.com/presentation/d/e/2PACX-1vRVudHBYlfrtXZDu7zIdbde3_dB3gIXrl6S0lMSARfRfA__m0TPL-AmQvVMdEIE6BqU6dLgQWJ-QYwP/pub?start=false&loop=false&delayms=3000)
