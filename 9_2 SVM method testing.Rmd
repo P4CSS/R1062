@@ -1,0 +1,209 @@
+---
+title: "SVM Testing"
+author: "JILUNG"
+date: "2018-06-15"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(tidytext)
+library(e1071)
+
+options(stringsAsFactors = F)
+```
+
+# loading
+```{r}
+load("data/stock_news.RData")
+```
+
+
+```{r jeibaR and stop word}
+library(jiebaR)
+segment_not <- c("鴻海" ,  "永豐金", "中信金", "台積電", "聯發科" ,"兆豐金", "台指期","郭台銘","張忠謀","鉅亨網")
+cutter <- worker()
+new_user_word(cutter,segment_not)
+stopWords <- readRDS("data/stopWords.rds")
+```
+
+
+# unnested.df
+
+```{r}
+
+unnested.df <- stock_news %>%
+    select(doc_id = newsId, text = content, status = status_p) %>%
+    mutate(word = purrr::map(text, function(x)segment(x, cutter))) %>%
+    unnest(word) %>%
+    filter(!is.na(word)) %>% 
+    filter(!word %in% stopWords$word) %>% 
+    filter(!str_detect(word, "[a-zA-Z0-9]+")) %>% 
+    filter(nchar(word) > 1) 
+```
+
+
+# Normal
+## Word combination +   tsne
+```{r}
+five.gram <- unnested.df %>%
+  # filter(!word %in% c())) %>%
+  select(w1 = word, everything()) %>%
+  group_by(doc_id) %>%
+  mutate(w2 = lead(w1, 1)) %>%
+  mutate(w3 = lead(w1, 2)) %>%
+  mutate(w4 = lead(w1, 3)) %>%
+  mutate(w5 = lead(w1, 4)) %>%
+  ungroup() %>%
+  filter(complete.cases(.)) %>%
+  mutate(w12 = paste0(w1, " ", w2)) %>%
+  mutate(w13 = paste0(w1, " ", w3)) %>%
+  mutate(w14 = paste0(w1, " ", w4)) %>%
+  mutate(w15 = paste0(w1, " ", w5))
+
+bigrams <- five.gram %>%
+    select(doc_id, w12, w13, w14, w15) %>%
+    gather("pair", "bigram", 2:5) %>%
+    select(doc_id, bigram) %>%
+    separate(bigram, c("V1", "V2"), sep = " ") %>%
+    left_join(stock_news %>% select(doc_id = newsId, status = status_p))
+```
+
+
+## Chi-square feature selection
+
+```{r}
+
+chi_df <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  count(w_c, status) %>% # word_combination
+  filter(n > 3) %>%
+  spread(status, n, fill=0) %>%
+  rename(A=`1`, C=`0`) %>%
+  # filter(!w_c=="NA NA") %>%
+  mutate(B=sum(A)-A,
+         D=sum(C)-C,
+         N=A+B+C+D, 
+         chi2 = (A*D - B*C)^2 * N / ((A+C)*(A+B)*(B+D)*(C+D))) %>%
+  filter(chi2 > 6.64)
+
+```
+
+
+
+
+
+## tf-idf
+
+```{r}
+comb.df <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  left_join(chi_df) %>%
+  filter(!is.na(chi2)) %>%
+  count(doc_id, w_c) %>%
+  bind_tf_idf(w_c, doc_id, n) %>%
+    select(doc_id, w_c, tf) %>%
+    spread(w_c, tf, fill=0) %>%
+  # select(doc_id, w_c, tf_idf) %>%
+  # spread(w_c, tf_idf, fill=0) %>%
+  left_join(select(stock_news, doc_id = newsId, status = status_p))
+```
+
+
+
+
+
+
+
+
+## tsne to reduce dimension
+```{r}
+
+library(Rtsne)
+feature <- comb.df[-c(1, ncol(comb.df))]
+
+tsne <- Rtsne(feature, perplexity = 35, dims = 4, check_duplicates = F)
+
+feature_tsne <- as.data.frame(tsne$Y)
+feature_tsne$labels <- as.factor(comb.df$status)
+feature_tsne %>%
+    ggplot(aes(V1, V2, color = labels)) +
+    geom_point()
+
+```
+
+
+
+## SVM （support vector machine）
+
+```{r}
+
+samples <- sample(1:nrow(feature_tsne),
+                  size = round(nrow(feature_tsne)*0.6))
+
+trainset <- feature_tsne %>% slice(samples)
+testset <- feature_tsne[-samples,]
+
+# trainset <- feature_tsne %>% slice(1:400)
+# testset <- feature_tsne %>% slice(401:599)
+
+model <- svm(labels~ ., data = trainset, kernel="radial")
+
+predicting  <- predict(model, testset)
+table(predicting)
+table(predicting, testset$labels)
+pre <- predicting == testset$labels
+percent1 <- length(pre[pre == T]) / length(pre)
+percent1
+```
+
+
+# by PCA
+```{r}
+feature <- comb.df[-c(1, ncol(comb.df))]
+feature <- feature/apply(feature, 1, max)
+m.pca <- prcomp(feature,
+					center = TRUE,
+					scale. = TRUE)
+
+m.pca <- as.data.frame(m.pca$x) %>% select(PC1, PC2)
+m.pca$labels <- as.factor(label)
+feature_tsne <- m.pca
+
+feature_tsne %>%
+    ggplot(aes(PC1, PC2, color = labels)) +
+    geom_point()
+```
+
+
+# No word-combinator
+```{r}
+chi_df <- unnested.df %>%
+    select(doc_id, word, status) %>%
+    count(word, status) %>% # word_combination
+    filter(n > 3) %>%
+    spread(status, n, fill=0) %>%
+    rename(A=`1`, C=`0`) %>%
+    mutate(B=sum(A)-A,
+         D=sum(C)-C,
+         N=A+B+C+D, 
+         chi2 = (A*D - B*C)^2 * N / ((A+C)*(A+B)*(B+D)*(C+D))) %>%
+    filter(chi2 > 3.84) # p > 0.05
+```
+
+
+```{r}
+comb.df <- unnested.df %>% select(doc_id, word, status) %>%
+  left_join(chi_df) %>%
+  filter(!is.na(chi2)) %>%
+  count(doc_id, word) %>%
+  bind_tf_idf(word, doc_id, n) %>%
+  select(doc_id, word, tf_idf) %>%
+  spread(word, tf_idf, fill=0) %>%
+  left_join(select(stock_news, doc_id = newsId, status = status_p))
+
+```
+
+## tf rather than tf-idf

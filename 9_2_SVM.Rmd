@@ -215,6 +215,23 @@ feature_tsne$labels <- as.factor(label)
 
 ```
 
+# by PCA
+```{r}
+feature <- feature/apply(feature, 1, max)
+# love.m <- d1_d2_tfidf_cos_sim
+m.pca <- prcomp(feature,
+					center = TRUE,
+					scale. = TRUE)
+
+m.pca <- as.data.frame(m.pca$x) %>% select(PC1, PC2)
+m.pca$labels <- as.factor(label)
+feature_tsne <- m.pca
+
+feature_tsne %>%
+    ggplot(aes(V1, V2, color = labels)) +
+    geom_point()
+```
+
 
 # 7. SVM （support vector machine）
 

@@ -1,0 +1,321 @@
+---
+title: "9_3_1_stock_random_forest"
+author: "Jilung Hsieh"
+date: "2018/5/29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reference
+* https://zhuanlan.zhihu.com/p/24416833
+
+### Training hints
+随机森林的分类效果（即错误率）与以下两个因素有关（内容引自博客[Machine Learning & Algorithm] 随机森林（Random Forest））：
+
+森林中任意两棵树的相关性：相关性越大，错误率越大
+森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低
+减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。
+
+
+### OOB
+如何选择最优的特征个数m，要解决这个问题，我们主要依据计算得到的袋外错误率oob error（out-of-bag error）。
+
+随机森林有一个重要的优点就是，没有必要对它进行交叉验证或者用一个独立的测试集来获得误差的一个无偏估计。它可以在内部进行评估，也就是说在生成的过程中就可以对误差建立一个无偏估计。
+
+
+
+我们知道，在构建每棵树时，我们对训练集使用了不同的bootstrap sample（随机且有放回地抽取）。所以对于每棵树而言，部分训练实例没有参与这棵树的生成，它们称为第k棵树的oob样本。
+
+袋外错误率（oob error）计算方式如下：
+
+对每个样本计算它作为oob样本的树对它的分类情况
+以简单多数投票作为该样本的分类结果
+最后用误分个数占样本总数的比率作为随机森林的oob误分率
+### Good parts
+1. 在当前所有算法中，具有极好的准确率
+2. 能够有效地运行在大数据集上
+3. 能够处理具有高维特征的输入样本，而且不需要降维
+4. 能够评估各个特征在分类问题上的重要性
+5. 在生成过程中，能够获取到内部生成误差的一种无偏估计
+6. 对于缺省值问题也能够获得很好得结果
+
+
+### comparing to other methods
+* Decision Tree：單一顆樹效果通常比Regression和分類法差。
+* **bootstrapping**：在訓練決策樹時，不僅訓練一次，而是反覆隨機抽取部分樣本出來建，這樣每棵樹建起來都不太一樣，判斷出來的分類也會不同。比方說，有60棵樹覺得會Survived，40棵樹覺得會Dead，那麼就會得到60%的Survived rate。從原本一棵樹的結果就是0/1，變成一個機率，該機率被稱為**bagging**。
+* **Random Forest**：在利用bootstrapping建立決策樹時，對於每棵樹的建立過程，原本是隨機挑variable，但這樣很容易掉進local optimum，因此random forest就讓每次都隨機放棄部分變數，這樣可以讓建出來的樹群很多樣。
+* **Boosting**: 每次挑變數時，上回合哪個變數挑的特別好，我給他的權重就越高，或者哪裡特別不好，我給他的權重就越低。
+
+
+```{r}
+browseURL("https://cfss.uchicago.edu/text_classification.html")
+library(tidyverse)
+library(tidytext)
+library(stringr)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+## Loading data
+```{r}
+load("data/stock_news.RData")
+stock_news %>% names
+```
+
+
+```{r jeibaR and stop word}
+library(jiebaR)
+segment_not <- c("鴻海" ,  "永豐金", "中信金", "台積電", "聯發科" ,"兆豐金", "台指期","郭台銘","張忠謀","鉅亨網")
+cutter <- worker()
+new_user_word(cutter,segment_not)
+stopWords <- readRDS("data/stopWords.rds")
+```
+
+
+
+
+## Stopwords
+```{r}
+
+unnested.df <- stock_news %>%
+    select(doc_id = newsId, text = content, status = status_p) %>%
+    mutate(word = purrr::map(text, function(x)segment(x, cutter))) %>%
+    unnest(word) %>%
+    filter(!is.na(word)) %>%
+    anti_join(stopWords) %>%
+    filter(!str_detect(word, "[a-zA-Z0-9]+")) %>% 
+    filter(nchar(word) > 1) 
+```
+
+```{r}
+five.gram <- unnested.df %>%
+  # filter(!word %in% c())) %>%
+  select(w1 = word, everything()) %>%
+  group_by(doc_id) %>%
+  mutate(w2 = lead(w1, 1)) %>%
+  mutate(w3 = lead(w1, 2)) %>%
+  mutate(w4 = lead(w1, 3)) %>%
+  mutate(w5 = lead(w1, 4)) %>%
+  ungroup() %>%
+  filter(complete.cases(.)) %>%
+  mutate(w12 = paste0(w1, " ", w2)) %>%
+  mutate(w13 = paste0(w1, " ", w3)) %>%
+  mutate(w14 = paste0(w1, " ", w4)) %>%
+  mutate(w15 = paste0(w1, " ", w5))
+
+bigrams <- five.gram %>%
+    select(doc_id, w12, w13, w14, w15) %>%
+    gather("pair", "bigram", 2:5) %>%
+    select(doc_id, bigram) %>%
+    separate(bigram, c("V1", "V2"), sep = " ") %>%
+    left_join(stock_news %>% select(doc_id = newsId, status = status_p))
+```
+
+
+```{r}
+# count.df <- bigrams %>%
+#   mutate(w_c = paste(V1, V2, sep=" ")) %>%
+#   count(w_c, status)
+
+chi_df <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  count(w_c, status) %>% # word_combination
+  filter(n > 3) %>%
+  spread(status, n, fill=0) %>%
+  rename(A=`1`, C=`0`) %>%
+  # filter(!w_c=="NA NA") %>%
+  mutate(B=sum(A)-A,
+         D=sum(C)-C,
+         N=A+B+C+D, 
+         chi2 = (A*D - B*C)^2 * N / ((A+C)*(A+B)*(B+D)*(C+D))) %>%
+  filter(chi2 > 6.64)
+
+```
+## from bigrams and cosine features selector
+```{r}
+(stock_dtm <- bigrams %>%
+  mutate(w_c = paste(V1, V2, sep=" ")) %>%
+  left_join(chi_df) %>%
+  filter(!is.na(chi2)) %>%
+    count(doc_id, w_c) %>%
+    cast_dtm(document = doc_id, term = w_c, value = n))
+```
+```
+Joining, by = "w_c"
+<<DocumentTermMatrix (documents: 599, terms: 1899)>>
+Non-/sparse entries: 10591/1126910
+Sparsity           : 99%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+```
+
+
+
+## DocumentTermMatrix
+```{r}
+(stock_dtm <- unnested.df %>%
+   # get count of each token in each document
+   count(doc_id, word) %>%
+   # create a document-term matrix with all features and tf weighting
+   cast_dtm(document = doc_id, term = word, value = n))
+  # cast_dtm(document = ID, term = word, value = n,
+  #          weighting = tm::weightTfIdf)
+
+
+
+```
+
+## delete sparse terms
+Another approach to reducing model complexity is to remove sparse terms from the model. That is, remove tokens which do not appear across many documents. It is similar to using tf-idf weighting, but directly deletes sparse variables from the document-term matrix. This results in a statistical learning model with a much smaller set of variables.
+
+The `tm` package contains the `removeSparseTerms()` function, which does this task. The first argument is a document-term matrix, and the second argument defines the maximal allowed sparsity in the range from 0 to 1. So for instance, sparse = .99 would remove any tokens which are missing from more than 99
+ of the documents in the corpus. Notice the effect changing this value has on the number of variables (tokens) retained in the document-term matrix:
+
+```{r}
+stock_dtm <- tm::removeSparseTerms(stock_dtm, sparse = .99)
+stock_dtm %>% dim
+dependent_var <- data.frame(doc_id = as.numeric(stock_dtm$dimnames$Docs)) %>%
+    left_join(stock_news %>% select(doc_id = newsId, status_p))
+
+
+test <- stock_news %>% select(doc_id = newsId, status_p)
+```
+
+
+
+## EDA
+
+```{r}
+word_tfidf <- unnested.df %>%
+   count(status, word) %>%
+   bind_tf_idf(word,  status, n)
+
+plot_tfidf <- word_tfidf %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+# graph the top 10 tokens for 4 categories
+plot_tfidf %>%
+  mutate(status = factor(status, levels = c(0,1),
+                        labels = c("down", "up"))) %>%
+  group_by(status) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  ggplot(aes(word, tf_idf)) +
+  geom_col() +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~status, scales = "free") +
+  coord_flip() + 
+	  theme(axis.text.y = element_text(family = "Heiti TC Light"))
+```
+
+
+## random forest
+```{r}
+library(caret)
+
+# time-consumed
+stock_rf <- train(x = as.matrix(stock_dtm),
+                     y = factor(stock_news$status_p),
+                  # y = factor(dependent_var$status_p), # for word_combination version
+                     method = "rf",
+                     ntree = 200,
+                     trControl = trainControl(method = "oob"))
+
+??train
+```
+
+* https://en.wikipedia.org/wiki/Out-of-bag_error: Out-of-bag (OOB) error, also called out-of-bag estimate, is a method of measuring the prediction error of random forests, boosted decision trees, and other machine learning models utilizing bootstrap aggregating (bagging) to sub-sample data samples used for training. OOB is the mean prediction error on each training sample xᵢ, using only the trees that did not have xᵢ in their bootstrap sample.[1]
+* http://blog.sina.com.cn/s/blog_4c9dc2a10102vl24.html: 对于构建第k棵树时候没有用到的每条记录，让它们过一遍第k棵树，进而获得一个分类.通过这种方法, 对任何一条记录来说，大概有1/3 的树没有用这条记录来构建，因而对这些树可以进行测试集上的数据分类。最终, 假设 类别j 是当记录n是oob时候，获得投票最多的类别，j被错误分类除以总记录数n，就是 oob error estimate. 这在很多测试中被证明是无偏的[2].
+* mtry 即為每顆決策樹之節點分支以隨機方式選擇屬性之個數
+```
+Call:
+ randomForest(x = x, y = y, ntree = 200, mtry = param$mtry) 
+               Type of random forest: classification
+                     Number of trees: 200
+No. of variables tried at each split: 1827
+
+        OOB estimate of  error rate: 38.52%
+Confusion matrix:
+    0  1 class.error
+0 286 78   0.2142857
+1 157 89   0.6382114
+```
+
+```{r}
+stock_rf$finalModel
+knitr::kable(stock_rf$finalModel$confusion)
+```
+## by word_combination
+```
+randomForest(x = x, y = y, ntree = 200, mtry = param$mtry) 
+               Type of random forest: classification
+                     Number of trees: 200
+No. of variables tried at each split: 36
+
+        OOB estimate of  error rate: 32.22%
+Confusion matrix:
+    0   1 class.error
+0 268  85   0.2407932
+1 108 138   0.4390244
+```
+
+## Evaluating results
+* `importance()` to calculate importance of vars
+* Vars with higher Mean Decrease Gini are more important.
+* Package: `randomForest` for Classification and Regression with Random Forest. `randomForest` implements Breiman's random forest algorithm (based on Breiman and Cutler's original Fortran code) for classification and regression. It can also be used in unsupervised mode for assessing proximities among data points.
+
+```{r}
+library(randomForest)
+
+randomForest::importance(stock_rf$finalModel)
+randomForest::varImpPlot(stock_rf$finalModel, family = "Heiti TC Light")
+
+```
+
+
+## tree size
+`treesize()` returns size of trees (number of nodes) in and ensemble.
+```{r}
+head(treesize(stock_rf$finalModel,terminal = TRUE))
+hist(treesize(stock_rf$finalModel,terminal = TRUE))
+```
+
+
+## Redo with training and testing data
+* 原則上randomForest被認為應該不用建立training data和testing data，因為在bootstraping的過程已經透過篩除部分的資料來降低overfitting的問題，或者保持每棵樹的多樣性。
+
+```{r}
+index <- sample(2,nrow(stock_dtm),replace = TRUE,prob=c(0.7,0.3))
+traindata <- stock_dtm[index==1,]
+testdata <- stock_dtm[index==2,]
+train_news <- stock_news[index==1,]
+test_news <- stock_news[index==2,]
+length(make.names(stock_dtm$status_p))
+stock_rf <- train(x = as.matrix(traindata),
+                       y = make.names(train_news$status_p),
+                     # y = factor(train_news$status_p),
+                     method = "rf",
+                     ntree = 200,
+                     trControl = trainControl(method = "oob"))
+```
+
+```{r}
+plot(stock_rf$finalModel)
+stock_rf$finalModel
+```
+
+## Using model
+```{r}
+stock_pred <- predict(stock_rf,newdata=testdata)
+table(stock_pred,test_news$status_p)
+plot(margin(stock_rf$finalModel, test_news$status_p))
+```
+
+
+
+
